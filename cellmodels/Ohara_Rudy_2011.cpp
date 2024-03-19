@@ -436,10 +436,10 @@ Ohara_Rudy_2011::Ohara_Rudy_2011()
 algebraic_size = 198;
 constants_size = 139+2;
 states_size = 41;
-ALGEBRAIC = new double[algebraic_size];
-CONSTANTS = new double[constants_size];
-RATES = new double[states_size];
-STATES = new double[states_size];
+// ALGEBRAIC = new double[algebraic_size];
+// CONSTANTS = new double[constants_size];
+// RATES = new double[states_size];
+// STATES = new double[states_size];
 }
 
 Ohara_Rudy_2011::~Ohara_Rudy_2011()
