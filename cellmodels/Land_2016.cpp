@@ -10,14 +10,25 @@
 // #include <cuda.h>
 
 // next: create a file to dump this
+Land_2016::Land_2016()
+{
 
+
+}
 
 Land_2016::~Land_2016()
 {
 
 }
 
-void Land_2016::initConsts(double type, bool is_skinned, double *BETA, double* y)
+
+void Land_2016::initConsts()
+{
+
+}
+
+
+void Land_2016::initConsts(bool is_skinned, bool BETA, double *y)
 {
     // user input
     CONSTANTS[dlambda_dt] = 0; 
@@ -107,7 +118,7 @@ if (CONSTANTS[lambda] >= 1.2){
 	
 // }
 
-void Land_2016::computeRates( double TIME)
+void Land_2016::computeRates(double TIME, double *CONSTANTS, double *RATES, double *STATES, double *ALGEBRAIC)
 {
 // XB model
 

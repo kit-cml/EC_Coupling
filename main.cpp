@@ -1,5 +1,5 @@
-#ifdef TOMEK_2019
-#include "cellmodels/Tomek_model.hpp"
+#ifdef LAND_2016
+#include "cellmodels/Land_2016.hpp"
 #else
 #include "cellmodels/Ohara_Rudy_2011.hpp"
 #endif
@@ -59,22 +59,25 @@ int main(int argc, char **argv)
 
 	int idx;
 
-#ifdef TOMEK_2019
-  printf("Using Tomek cell model\n");
-  p_cell = new Tomek_model();
+#ifdef LAND_2016
+  printf("Using Land cell model\n");
+  double y[6] = {0.0, 0.0, 1.0, 0.0, 0.0, 0.0};
+  p_cell = new Land_2016();
+  p_cell->initConsts(false, true, y);
 #else
   printf("Using O'Hara Rudy cell model\n");
   p_cell = new Ohara_Rudy_2011();
-#endif
   p_cell->initConsts();
+#endif
+  
 
 // apply Dutta scaling
-#ifndef TOMEK_2019 
-  p_cell->CONSTANTS[GKs] *= 1.870;
-  p_cell->CONSTANTS[GKr] *= 1.013;
-  p_cell->CONSTANTS[GK1] *= 1.698;
-  p_cell->CONSTANTS[PCa] *= 1.007;
-  p_cell->CONSTANTS[GNaL] *= 2.661;
+#ifndef LAND_2016 
+  // p_cell->CONSTANTS[GKs] *= 1.870;
+  // p_cell->CONSTANTS[GKr] *= 1.013;
+  // p_cell->CONSTANTS[GK1] *= 1.698;
+  // p_cell->CONSTANTS[PCa] *= 1.007;
+  // p_cell->CONSTANTS[GNaL] *= 2.661;
 #endif
 
   pace_max = 1000;
@@ -83,13 +86,13 @@ int main(int argc, char **argv)
   dt = 0.001;
   tnext = tcurr+dt;
 
-  p_cell->CONSTANTS[BCL] = bcl;
+  // p_cell->CONSTANTS[BCL] = bcl;
   double dtw = 2.0;
   const unsigned int print_freq = (1./dt) * dtw;
 
 
-#ifdef TOMEK_2019
-  CVodeSetMaxStep(cvode_mem, p_cell->CONSTANTS[i_Stim_PulseDuration]);
+#ifdef LAND_2016
+  // CVodeSetMaxStep(cvode_mem, p_cell->CONSTANTS[i_Stim_PulseDuration]);
 #else
   // CVodeSetMaxStep(cvode_mem, p_cell->CONSTANTS[duration]);
 #endif
@@ -110,8 +113,8 @@ int main(int argc, char **argv)
   snprintf(buffer, sizeof(buffer), "ikr_gates.plt");
   fp_ikr_gates = fopen(buffer, "w");
 
-#ifdef TOMEK_2019
-  snprintf(buffer, sizeof(buffer), "output_tomek.dat");
+#ifdef LAND_2016
+  snprintf(buffer, sizeof(buffer), "output_Land.dat");
 #else
   snprintf(buffer, sizeof(buffer), "output_orudy.dat");
 #endif
@@ -148,14 +151,15 @@ int main(int argc, char **argv)
 		         p_cell->STATES,
             		 p_cell->ALGEBRAIC);
 
-#ifdef TOMEK_2019
-		dt_set = Tomek_model::set_time_step(tcurr,
-               time_point,
-               max_time_step,
-                 p_cell->CONSTANTS,
-               p_cell->RATES,
-         p_cell->STATES,
-               p_cell->ALGEBRAIC);
+#ifdef LAND_2016
+		// dt_set = Land_2016::set_time_step(tcurr,
+    //            time_point,
+    //            max_time_step,
+    //              p_cell->CONSTANTS,
+    //            p_cell->RATES,
+    //      p_cell->STATES,
+    //            p_cell->ALGEBRAIC);
+    dt_set = dt;
 #else
     dt_set = Ohara_Rudy_2011::set_time_step(tcurr,
         		   time_point,
@@ -179,22 +183,23 @@ int main(int argc, char **argv)
     //Compute the analytical solution
     p_cell->solveAnalytical(dt);
     //p_cell->solveRK4(tcurr, dt);
-    if(p_cell->STATES[v] > -88.0){
-      inet = (p_cell->ALGEBRAIC[INaL]+p_cell->ALGEBRAIC[ICaL]+p_cell->ALGEBRAIC[Ito]+p_cell->ALGEBRAIC[IKr]+p_cell->ALGEBRAIC[IKs]+p_cell->ALGEBRAIC[IK1]);
-      qnet += inet * dt;
-    }
+
+    // if(p_cell->STATES[v] > -88.0){
+    //   inet = (p_cell->ALGEBRAIC[INaL]+p_cell->ALGEBRAIC[ICaL]+p_cell->ALGEBRAIC[Ito]+p_cell->ALGEBRAIC[IKr]+p_cell->ALGEBRAIC[IKs]+p_cell->ALGEBRAIC[IK1]);
+    //   qnet += inet * dt;
+    // }
 #ifdef DEBUG
 		//if(tcurr <= 300.0) printf("%lf,%lf,%lf\n", tcurr,dt, p_cell->STATES[v]);
 #endif
     //if( tcurr > (bcl*(pace_max-1))  ){
-      fprintf(fp_inet, "%lf,%lf\n", tcurr, inet);
-      fprintf(fp_qnet, "%lf,%lf\n", tcurr, qnet/1000.);
-      fprintf(fp_vm, "%lf,%lf,%lf\n", tcurr, p_cell->STATES[v], p_cell->RATES[v]);
-      fprintf(fp_icurr, "%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n", tcurr,
-                        p_cell->ALGEBRAIC[INa], p_cell->ALGEBRAIC[IKr], p_cell->ALGEBRAIC[IKs],
-                        p_cell->ALGEBRAIC[IK1], p_cell->ALGEBRAIC[Ito], p_cell->ALGEBRAIC[ICaL]);
-      fprintf(fp_conc, "%lf,%lf,%lf\n", tcurr, p_cell->STATES[nai], p_cell->STATES[cai]);
-			fprintf(fp_timestep, "%lf,%lf\n", tcurr,dt);
+      // fprintf(fp_inet, "%lf,%lf\n", tcurr, inet);
+      // fprintf(fp_qnet, "%lf,%lf\n", tcurr, qnet/1000.);
+      // fprintf(fp_vm, "%lf,%lf,%lf\n", tcurr, p_cell->STATES[v], p_cell->RATES[v]);
+      // fprintf(fp_icurr, "%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n", tcurr,
+      //                   p_cell->ALGEBRAIC[INa], p_cell->ALGEBRAIC[IKr], p_cell->ALGEBRAIC[IKs],
+      //                   p_cell->ALGEBRAIC[IK1], p_cell->ALGEBRAIC[Ito], p_cell->ALGEBRAIC[ICaL]);
+      // fprintf(fp_conc, "%lf,%lf,%lf\n", tcurr, p_cell->STATES[nai], p_cell->STATES[cai]);
+			// fprintf(fp_timestep, "%lf,%lf\n", tcurr,dt);
 			// fprintf(fp_ikr_gates, "%lf,%lf,%lf,%lf,%lf,%lf\n", 
 			// 											tcurr,p_cell->STATES[O],p_cell->STATES[I],p_cell->STATES[C1],p_cell->STATES[C2],p_cell->STATES[C3]);
     //}

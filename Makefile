@@ -26,9 +26,9 @@ CXX := g++
 #CXXFLAGS += -Wall -O0 -fpermissive -std=c++11
 #CXXFLAGS += -Wall -O2 -fno-alias -fpermissive
 CXXFLAGS += -Wall
-# Use this if you want to use Tomek 2019 cell model.
+# Use this if you want to use Land 2019 cell model.
 # Otherwise, comment it
-# CXXFLAGS += -DTOMEK_2019
+CXXFLAGS += -DLAND_2016
 # Use this if you want to use analytical solution.
 # Otherwise, comment it
 CXXFLAGS += -DANALYTICAL
