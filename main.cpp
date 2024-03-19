@@ -9,11 +9,6 @@
 #include <ctime>
 #include <iostream>
 
-#include <cvode/cvode.h>
-#include <nvector/nvector_serial.h>
-#include <sunmatrix/sunmatrix_dense.h> 
-#include <sunlinsol/sunlinsol_dense.h>
-
 clock_t START_TIMER;
 
 clock_t tic()
@@ -30,26 +25,13 @@ void toc(clock_t start = START_TIMER)
 }
 
 
-int rhs_fn(realtype time, N_Vector y, N_Vector ydot, void* user_data)
-{
-  Cellmodel* data = (Cellmodel*)user_data;
-  data->computeRates(time,
-      data->CONSTANTS,
-      N_VGetArrayPointer_Serial(ydot),
-      N_VGetArrayPointer_Serial(y),
-      data->ALGEBRAIC);
-  return 0;
-}
-
 int main(int argc, char **argv)
 {
   // CVode variables
   double tnext, tcurr;
   int cvode_retval;
   unsigned int icount, imax;
-  N_Vector states_vec;
-  SUNMatrix matrix;
-  SUNLinearSolver solver;
+
   void* cvode_mem;
 
   // cell object pointer
@@ -105,19 +87,13 @@ int main(int argc, char **argv)
   double dtw = 2.0;
   const unsigned int print_freq = (1./dt) * dtw;
 
-  cvode_mem = CVodeCreate(CV_BDF);
-  states_vec = N_VMake_Serial(p_cell->states_size, p_cell->STATES);
-  matrix = SUNDenseMatrix(p_cell->states_size, p_cell->states_size);
-  solver = SUNLinSol_Dense(states_vec, matrix);
-  CVodeInit(cvode_mem, rhs_fn, tcurr, states_vec);
-  CVodeSetUserData(cvode_mem, p_cell);
-  CVodeSStolerances(cvode_mem, 1.0e-7, 1.0e-7);
+
 #ifdef TOMEK_2019
   CVodeSetMaxStep(cvode_mem, p_cell->CONSTANTS[i_Stim_PulseDuration]);
 #else
-  CVodeSetMaxStep(cvode_mem, p_cell->CONSTANTS[duration]);
+  // CVodeSetMaxStep(cvode_mem, p_cell->CONSTANTS[duration]);
 #endif
-  CVodeSetLinearSolver(cvode_mem, solver, matrix);
+  // CVodeSetLinearSolver(cvode_mem, solver, matrix);
 
   snprintf(buffer, sizeof(buffer), "vmcheck.plt");
   fp_vm = fopen(buffer, "w");
@@ -219,8 +195,8 @@ int main(int argc, char **argv)
                         p_cell->ALGEBRAIC[IK1], p_cell->ALGEBRAIC[Ito], p_cell->ALGEBRAIC[ICaL]);
       fprintf(fp_conc, "%lf,%lf,%lf\n", tcurr, p_cell->STATES[nai], p_cell->STATES[cai]);
 			fprintf(fp_timestep, "%lf,%lf\n", tcurr,dt);
-			fprintf(fp_ikr_gates, "%lf,%lf,%lf,%lf,%lf,%lf\n", 
-														tcurr,p_cell->STATES[O],p_cell->STATES[I],p_cell->STATES[C1],p_cell->STATES[C2],p_cell->STATES[C3]);
+			// fprintf(fp_ikr_gates, "%lf,%lf,%lf,%lf,%lf,%lf\n", 
+			// 											tcurr,p_cell->STATES[O],p_cell->STATES[I],p_cell->STATES[C1],p_cell->STATES[C2],p_cell->STATES[C3]);
     //}
     tcurr += dt;
   }
@@ -232,7 +208,6 @@ int main(int argc, char **argv)
   imax = (pace_max*bcl)/dt;
   while (icount < imax)
   {
-    cvode_retval = CVode(cvode_mem, tnext, states_vec, &tcurr, CV_NORMAL);
     if(p_cell->STATES[v] > -88.0){
       inet = (p_cell->ALGEBRAIC[INaL]+p_cell->ALGEBRAIC[ICaL]+p_cell->ALGEBRAIC[Ito]+p_cell->ALGEBRAIC[IKr]+p_cell->ALGEBRAIC[IKs]+p_cell->ALGEBRAIC[IK1]);
       qnet += inet * dt;
@@ -246,7 +221,7 @@ int main(int argc, char **argv)
 #ifdef DEBUG
     printf("%lf,%lf,%lf\n", tcurr,dt, p_cell->STATES[v]);
 #endif
-    if (cvode_retval == CV_SUCCESS) {
+    if (cvode_retval) {
       //CVodeGetLastStep(cvode_mem, &dt);
       if(pace_count > pace_max-1 /*&& icount % print_freq == 0*/){
         fprintf(fp_inet, "%lf,%lf\n", tcurr, inet);
@@ -280,10 +255,6 @@ int main(int argc, char **argv)
   fclose(fp_inet);
 	fclose(fp_ikr_gates);
 	fclose(fp_timestep);
-  SUNMatDestroy(matrix);
-  SUNLinSolFree(solver);
-  N_VDestroy(states_vec);
-  CVodeFree(&cvode_mem);
 
   delete p_cell;
 

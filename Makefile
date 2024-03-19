@@ -28,7 +28,7 @@ CXX := g++
 CXXFLAGS += -Wall
 # Use this if you want to use Tomek 2019 cell model.
 # Otherwise, comment it
-CXXFLAGS += -DTOMEK_2019
+# CXXFLAGS += -DTOMEK_2019
 # Use this if you want to use analytical solution.
 # Otherwise, comment it
 CXXFLAGS += -DANALYTICAL
@@ -36,7 +36,8 @@ CXXFLAGS += -DANALYTICAL
 CXXFLAGS += -DDEBUG
 
 # LDFLAGS is used for linker (-g enables debug symbols)
-LDFLAGS  += -g -L/usr/local/lib -lsundials_cvode -lsundials_nvecserial
+# LDFLAGS  += -g -L/usr/local/lib -lsundials_cvode -lsundials_nvecserial
+LDFLAGS  += -g -L/usr/local/lib 
 
 # List the project' sources to compile or let the Makefile recognize
 # them for you using 'wildcard' function.
