@@ -9,6 +9,9 @@
 #include <ctime>
 #include <iostream>
 
+#include <vector>
+#include <string.h>
+
 clock_t START_TIMER;
 
 clock_t tic()
@@ -22,6 +25,40 @@ void toc(clock_t start = START_TIMER)
       << "Elapsed time: "
       << (clock() - start) / (double)CLOCKS_PER_SEC << "s"
       << std::endl;
+}
+
+int get_cai_data_from_file(const char* file_name, double *cai)
+{
+  //put them in as array of double
+  FILE *fp_cai;
+  
+  char *token, buffer[255];
+  unsigned short idx;
+
+  if( (fp_cai = fopen(file_name, "r")) == NULL){
+    printf("Cannot open file %s\n",
+      file_name);
+    return 0;
+  }
+
+  idx = 0;
+  int sample_size = 0;
+
+  fgets(buffer, sizeof(buffer), fp_cai); // skip header
+  while( fgets(buffer, sizeof(buffer), fp_cai) != NULL )
+  { // begin line reading
+    token = strtok( buffer, "," );
+    idx = 0;
+    while( token != NULL )
+    { // begin data tokenizing
+      cai[idx++] = strtod(token, NULL);
+      token = strtok(NULL, ",");
+    } // end data tokenizing
+     sample_size++;
+  } // end line reading
+
+  fclose(fp_cai);
+  return sample_size;
 }
 
 
@@ -58,12 +95,16 @@ int main(int argc, char **argv)
 
 
 	int idx;
+  double Cai_input[1000];
+  get_cai_data_from_file("./cai_input.csv", Cai_input);
 
 #ifdef LAND_2016
   printf("Using Land cell model\n");
   double y[6] = {0.0, 0.0, 1.0, 0.0, 0.0, 0.0};
   p_cell = new Land_2016();
+  printf("calling the Land cell model\n");
   p_cell->initConsts(false, true, y);
+  printf("Initialising\n");
 #else
   printf("Using O'Hara Rudy cell model\n");
   p_cell = new Ohara_Rudy_2011();
@@ -80,8 +121,8 @@ int main(int argc, char **argv)
   // p_cell->CONSTANTS[GNaL] *= 2.661;
 #endif
 
-  pace_max = 1000;
-  bcl = 2000.;
+  pace_max = 1;
+  bcl = 1000.;
   tcurr = 0.0;
   dt = 0.001;
   tnext = tcurr+dt;
@@ -98,6 +139,7 @@ int main(int argc, char **argv)
 #endif
   // CVodeSetLinearSolver(cvode_mem, solver, matrix);
 
+#ifndef LAND_2016
   snprintf(buffer, sizeof(buffer), "vmcheck.plt");
   fp_vm = fopen(buffer, "w");
   snprintf(buffer, sizeof(buffer), "icurr.plt");
@@ -113,6 +155,15 @@ int main(int argc, char **argv)
   snprintf(buffer, sizeof(buffer), "ikr_gates.plt");
   fp_ikr_gates = fopen(buffer, "w");
 
+  fprintf(fp_vm, "Time,v\n");
+  fprintf(fp_icurr, "Time,INa,IKr,IKs,IK1,Ito,ICaL\n");
+  fprintf(fp_conc, "Time,nai,cai\n");
+  fprintf(fp_inet, "Time,Inet\n");
+  fprintf(fp_qnet, "Time,Qnet\n");
+  fprintf(fp_timestep, "Time,dt\n");
+  fprintf(fp_ikr_gates, "Time,O,I,C1,C2,C3\n");
+#endif
+
 #ifdef LAND_2016
   snprintf(buffer, sizeof(buffer), "output_Land.dat");
 #else
@@ -121,13 +172,7 @@ int main(int argc, char **argv)
   fp_output = fopen(buffer, "w");
 
 
-  fprintf(fp_vm, "Time,v\n");
-  fprintf(fp_icurr, "Time,INa,IKr,IKs,IK1,Ito,ICaL\n");
-  fprintf(fp_conc, "Time,nai,cai\n");
-  fprintf(fp_inet, "Time,Inet\n");
-  fprintf(fp_qnet, "Time,Qnet\n");
-  fprintf(fp_timestep, "Time,dt\n");
-  fprintf(fp_ikr_gates, "Time,O,I,C1,C2,C3\n");
+ 
 
   pace_count = 0;
   inet = 0.;
@@ -144,7 +189,6 @@ int main(int argc, char **argv)
   while(tcurr < tmax)
   {
     // compute ODE at tcurr
-
     p_cell->computeRates(tcurr,
 		         p_cell->CONSTANTS,
             		 p_cell->RATES,
@@ -162,12 +206,12 @@ int main(int argc, char **argv)
     dt_set = dt;
 #else
     dt_set = Ohara_Rudy_2011::set_time_step(tcurr,
-        		   time_point,
-		           max_time_step,
-  		           p_cell->CONSTANTS,
-		           p_cell->RATES,
-			   p_cell->STATES,
-		           p_cell->ALGEBRAIC);
+        		    time_point,
+		            max_time_step,
+  		          p_cell->CONSTANTS,
+		            p_cell->RATES,
+			          p_cell->STATES,
+		            p_cell->ALGEBRAIC);
 #endif
     // compute accepted timestep
     if (floor((tcurr + dt_set) / bcl) == floor(tcurr / bcl)) {
@@ -179,11 +223,14 @@ int main(int argc, char **argv)
       if(floor(tcurr)==floor(bcl*pace_max)) printf("Qnet final value: %lf\n", qnet/1000.0);
       qnet = 0.;
     }
-
+#ifdef LAND_2016
+    printf("%f \n", tcurr);
+    p_cell->solveEuler(dt, tcurr*1000, Cai_input);
     //Compute the analytical solution
+#else
     p_cell->solveAnalytical(dt);
     //p_cell->solveRK4(tcurr, dt);
-
+#endif
     // if(p_cell->STATES[v] > -88.0){
     //   inet = (p_cell->ALGEBRAIC[INaL]+p_cell->ALGEBRAIC[ICaL]+p_cell->ALGEBRAIC[Ito]+p_cell->ALGEBRAIC[IKr]+p_cell->ALGEBRAIC[IKs]+p_cell->ALGEBRAIC[IK1]);
     //   qnet += inet * dt;
