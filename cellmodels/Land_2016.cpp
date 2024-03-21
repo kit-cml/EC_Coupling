@@ -94,6 +94,14 @@ if (CONSTANTS[lambda] >= 1.2){
     STATES[ZETAS] = y[4];
     STATES[ZETAW] = y[5];
     STATES[dCd_dt] = 0.;
+
+    // STATES[XS] = 0.;
+    // STATES[XW] = 0.;
+    // STATES[TRPN] = 1.0;
+    // STATES[TmBlocked] = 0.;
+    // STATES[ZETAS] = 0.;
+    // STATES[ZETAW] = 0.;
+
     // seventh state is below, in passive model (dCd_dt)
 
     CONSTANTS[par_k] = 7;
@@ -176,8 +184,8 @@ RATES[TmBlocked] = CONSTANTS[ktm_block] * fmin(100, pow(RATES[TRPN], - (CONSTANT
 //-------------------------------------------------------------------------------
 // Velocity dependence -- assumes distortion resets on W->S
 
-RATES[ZETAS] = CONSTANTS[A] * dlambda_dt - CONSTANTS[cds] * STATES[ZETAS];
-RATES[ZETAW] = CONSTANTS[A] * dlambda_dt - CONSTANTS[cdw] * STATES[ZETAW];
+RATES[ZETAS] = CONSTANTS[A] * CONSTANTS[dlambda_dt] - CONSTANTS[cds] * STATES[ZETAS];
+RATES[ZETAW] = CONSTANTS[A] * CONSTANTS[dlambda_dt] - CONSTANTS[cdw] * STATES[ZETAW];
 
  //-------------------------------------------------------------------------------
     // Passive model
@@ -208,17 +216,21 @@ RATES[ZETAW] = CONSTANTS[A] * dlambda_dt - CONSTANTS[cdw] * STATES[ZETAW];
 
 }
 
-void Land_2016::solveEuler(double dt, double t, double *Cai_input)
+void Land_2016::solveEuler(double dt, double t, double Cai_input)
 {
-    int cai_index = t;
-    CONSTANTS[Cai] = Cai_input[cai_index];
+
+    CONSTANTS[Cai] = Cai_input;
+    // printf("%f\n", Cai_input);
     STATES[XS] = STATES[XS] + RATES[XS] * dt;
     STATES[XW] = STATES[XW] + RATES[XW] * dt;
-    STATES[TRPN] = STATES[TRPN] + RATES[XW] * dt;
+    STATES[TRPN] = STATES[TRPN] + RATES[TRPN] * dt;
     STATES[TmBlocked] = STATES[TmBlocked] + RATES[TmBlocked] * dt;
     STATES[ZETAS] = STATES[ZETAS] + RATES[ZETAS] * dt;
     STATES[ZETAW] = STATES[ZETAW] + RATES[ZETAS] * dt;
     STATES[dCd_dt] = STATES[dCd_dt] + RATES[dCd_dt] * dt;
+    // printf("%f %f %f\n",  ALGEBRAIC[Lfac], ALGEBRAIC[Ta] , ALGEBRAIC[Tp]);
+    // karena Lfac 0, jadi Ta nya 0
+    // printf("rates: %f %f %f\n",  RATES[XS] , RATES[XW], RATES[TRPN] );
 }
 
 // double set_time_step(double TIME, double time_point, double max_time_step, double *CONSTANTS, double *RATES, double *STATES, double *ALGEBRAIC, int offset)

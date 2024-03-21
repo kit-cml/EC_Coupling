@@ -48,7 +48,6 @@ int get_cai_data_from_file(const char* file_name, double *cai)
   while( fgets(buffer, sizeof(buffer), fp_cai) != NULL )
   { // begin line reading
     token = strtok( buffer, "," );
-    idx = 0;
     while( token != NULL )
     { // begin data tokenizing
       cai[idx++] = strtod(token, NULL);
@@ -94,9 +93,17 @@ int main(int argc, char **argv)
 	FILE* fp_ikr_gates;
 
 
-	int idx;
-  double Cai_input[1000];
-  get_cai_data_from_file("./cai_input.csv", Cai_input);
+	int idx=0;
+  double temp_Cai_input[2000],Cai_input[1000];
+  int length = get_cai_data_from_file("./cai_input.csv", temp_Cai_input);
+//   printf("%f %f \n", Cai_input[2], Cai_input[3]);
+//   printf("%d\n", length);
+  for(int a = 1; a<2000; a = a+2){
+  //  printf("%d %f\n",a, Cai_input[a]);
+  Cai_input[idx] = temp_Cai_input[a];
+  idx++;
+}
+  int cai_index;
 
 #ifdef LAND_2016
   printf("Using Land cell model\n");
@@ -165,14 +172,20 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef LAND_2016
-  snprintf(buffer, sizeof(buffer), "output_Land.dat");
+  // snprintf(buffer, sizeof(buffer), "output_Land.dat");
+  snprintf(buffer, sizeof(buffer), "cai_check.csv");
+  fp_vm = fopen(buffer, "w");
+  fprintf(fp_vm, "Time,Cai\n");
 #else
   snprintf(buffer, sizeof(buffer), "output_orudy.dat");
 #endif
   fp_output = fopen(buffer, "w");
 
+// for(int a = 0; a<2000;a++){
+//   if(Cai_input[a]>0) printf("%d %f\n",a, Cai_input[a]);
+// }
 
- 
+  int idx_temp=1;
 
   pace_count = 0;
   inet = 0.;
@@ -181,8 +194,8 @@ int main(int argc, char **argv)
 #ifdef ANALYTICAL
   tic();
   printf("Analytical method\n");
-  //double tmax = pace_max*bcl;
-  double tmax = 281.;
+  double tmax = pace_max*bcl;
+  // double tmax = 281.;
   double max_time_step = 1.0;
   double time_point = 25.0;
   double dt_set;
@@ -224,8 +237,14 @@ int main(int argc, char **argv)
       qnet = 0.;
     }
 #ifdef LAND_2016
-    printf("%f \n", tcurr);
-    p_cell->solveEuler(dt, tcurr*1000, Cai_input);
+    // printf("%f \n", tcurr);
+    cai_index = tcurr;
+    // cai_index = cai_index + idx_temp;
+    // idx_temp++;
+    
+    // printf("%d %f\n",cai_index, Cai_input[cai_index]);
+    p_cell->solveEuler(dt, tcurr, Cai_input[cai_index]);
+
     //Compute the analytical solution
 #else
     p_cell->solveAnalytical(dt);
@@ -241,7 +260,7 @@ int main(int argc, char **argv)
     //if( tcurr > (bcl*(pace_max-1))  ){
       // fprintf(fp_inet, "%lf,%lf\n", tcurr, inet);
       // fprintf(fp_qnet, "%lf,%lf\n", tcurr, qnet/1000.);
-      // fprintf(fp_vm, "%lf,%lf,%lf\n", tcurr, p_cell->STATES[v], p_cell->RATES[v]);
+      fprintf(fp_vm, "%lf,%lf\n", tcurr, p_cell->ALGEBRAIC[T]);
       // fprintf(fp_icurr, "%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n", tcurr,
       //                   p_cell->ALGEBRAIC[INa], p_cell->ALGEBRAIC[IKr], p_cell->ALGEBRAIC[IKs],
       //                   p_cell->ALGEBRAIC[IK1], p_cell->ALGEBRAIC[Ito], p_cell->ALGEBRAIC[ICaL]);
@@ -276,13 +295,13 @@ int main(int argc, char **argv)
     if (cvode_retval) {
       //CVodeGetLastStep(cvode_mem, &dt);
       if(pace_count > pace_max-1 /*&& icount % print_freq == 0*/){
-        fprintf(fp_inet, "%lf,%lf\n", tcurr, inet);
-        fprintf(fp_qnet, "%lf,%lf\n", tcurr, qnet/1000.0);
-        fprintf(fp_vm, "%lf,%lf\n", tcurr, p_cell->STATES[v]);
-        fprintf(fp_icurr, "%lf,%lf,%lf,%lf,%lf,%lf,%lf\n", tcurr, 
-                          p_cell->ALGEBRAIC[INa], p_cell->ALGEBRAIC[IKr], p_cell->ALGEBRAIC[IKs],
-                          p_cell->ALGEBRAIC[IK1], p_cell->ALGEBRAIC[Ito], p_cell->ALGEBRAIC[ICaL]);
-        fprintf(fp_conc, "%lf,%lf,%lf\n", tcurr, p_cell->STATES[nai], p_cell->STATES[cai]);
+        // fprintf(fp_inet, "%lf,%lf\n", tcurr, inet);
+        // fprintf(fp_qnet, "%lf,%lf\n", tcurr, qnet/1000.0);
+        // fprintf(fp_vm, "%lf,%lf\n", tcurr, p_cell->STATES[v]);
+        // fprintf(fp_icurr, "%lf,%lf,%lf,%lf,%lf,%lf,%lf\n", tcurr, 
+        //                   p_cell->ALGEBRAIC[INa], p_cell->ALGEBRAIC[IKr], p_cell->ALGEBRAIC[IKs],
+        //                   p_cell->ALGEBRAIC[IK1], p_cell->ALGEBRAIC[Ito], p_cell->ALGEBRAIC[ICaL]);
+        // fprintf(fp_conc, "%lf,%lf,%lf\n", tcurr, p_cell->STATES[nai], p_cell->STATES[cai]);
       }
         icount++;
         tnext += dt;
@@ -299,14 +318,14 @@ int main(int argc, char **argv)
 
   printf("Qnet final value: %lf\n", qnet/1000.0);
 
-  fclose(fp_output);
+  // fclose(fp_output);
   fclose(fp_vm);
-  fclose(fp_icurr);
-  fclose(fp_conc);
-  fclose(fp_qnet);
-  fclose(fp_inet);
-	fclose(fp_ikr_gates);
-	fclose(fp_timestep);
+  // fclose(fp_icurr);
+  // fclose(fp_conc);
+  // fclose(fp_qnet);
+  // fclose(fp_inet);
+	// fclose(fp_ikr_gates);
+	// fclose(fp_timestep);
 
   delete p_cell;
 

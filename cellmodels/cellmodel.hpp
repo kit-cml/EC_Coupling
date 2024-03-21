@@ -29,10 +29,11 @@ public:
   virtual void initConsts(double type, double conc, double *hill){}
   virtual void initConsts(double type, double conc, double *hill, bool is_dutta){}
   virtual void initConsts(double type, double conc, double *hill, double* boot){}
+  virtual void initConsts( bool is_skinned, bool BETA, double* y){}
   virtual void computeRates(double TIME, double *CONSTANTS, double *RATES, double *STATES, double *ALGEBRAIC) = 0;
-  virtual void solveAnalytical(double dt) {};
-  virtual void solveEuler( double dt, double t, double *Cai_input ){};
-  virtual void solveRK4(double TIME,double dt) {};
+  virtual void solveAnalytical(double dt) {}
+  virtual void solveEuler( double dt, double t, double Cai_input ){}
+  virtual void solveRK4(double TIME,double dt) {}
 };
 
 #endif
