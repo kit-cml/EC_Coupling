@@ -130,11 +130,14 @@ void Land_2016::computeRates(double TIME, double *CONSTANTS, double *RATES, doub
 {
 // XB model
 
-double temp_lambda = CONSTANTS[lambda];
+double temp_lambda;
 if (temp_lambda > 0.87){
     temp_lambda = 0.87;
 }
+
 ALGEBRAIC[Lfac]  = CONSTANTS[beta_0] * (CONSTANTS[lambda] + temp_lambda - 1.87);
+// disini gak ngubah apa2 (nilai Lfac gak berubah karena temp lambda selalu pas gitu)
+printf("%lf = %lf * (%lf + %lf - 1.87)\n", ALGEBRAIC[Lfac], CONSTANTS[beta_0], CONSTANTS[lambda], temp_lambda );
 if (ALGEBRAIC[Lfac] < 0){
     ALGEBRAIC[Lfac] = 0 ;
 }
