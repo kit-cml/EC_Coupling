@@ -244,7 +244,7 @@ RATES[ZETAW] = CONSTANTS[A] * CONSTANTS[dlambda_dt] - CONSTANTS[cdw] * STATES[ZE
     ALGEBRAIC[Ta] = ALGEBRAIC[Lfac] * (CONSTANTS[Tref] / CONSTANTS[dr]) * ((STATES[ZETAS] + 1) * STATES[XS] + (STATES[ZETAW])*STATES[XW]);
     // printf("%lf = %lf * (%lf / %lf) * ((%lf +1 ) * %lf + (%lf) * %lf)\n", ALGEBRAIC[Ta], ALGEBRAIC[Lfac], CONSTANTS[Tref], CONSTANTS[dr], STATES[ZETAS], STATES[XS], STATES[ZETAW], STATES[XW]);
     ALGEBRAIC[T] = ALGEBRAIC[Ta] + ALGEBRAIC[Tp];
-    printf("%lf,%lf\n",TIME,ALGEBRAIC[T]);
+    // printf("%lf,%lf\n",TIME,ALGEBRAIC[T]);
 
 }
 
@@ -252,7 +252,7 @@ void Land_2016::solveEuler(double dt, double t, double Cai_input)
 {
 
     CONSTANTS[Cai] = Cai_input;
-    printf("%f\n", CONSTANTS[Cai]);
+    printf("Cai: %lf dt: %lf t: %lf\n", CONSTANTS[Cai],dt,t);
     STATES[XS] = STATES[XS] + RATES[XS] * dt;
     STATES[XW] = STATES[XW] + RATES[XW] * dt;
     STATES[TRPN] = STATES[TRPN] + RATES[TRPN] * dt;
@@ -260,7 +260,7 @@ void Land_2016::solveEuler(double dt, double t, double Cai_input)
     STATES[ZETAS] = STATES[ZETAS] + RATES[ZETAS] * dt;
     STATES[ZETAW] = STATES[ZETAW] + RATES[ZETAW] * dt;
     STATES[dCd_dt] = STATES[dCd_dt] + RATES[dCd_dt] * dt;
-    printf("Lfac: %f Ta: %f Tp: %f\n",  ALGEBRAIC[Lfac], ALGEBRAIC[Ta] , ALGEBRAIC[Tp]);
+    // printf("Lfac: %f Ta: %f Tp: %f\n",  ALGEBRAIC[Lfac], ALGEBRAIC[Ta] , ALGEBRAIC[Tp]);
     // karena Lfac 0, jadi Ta nya 0
     // printf("rates: %f %f %f\n",  RATES[XS] , RATES[XW], RATES[TRPN] );
 }
