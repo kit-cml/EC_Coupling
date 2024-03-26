@@ -94,6 +94,10 @@ if (CONSTANTS[lambda] >= 1.2){
     STATES[ZETAS] = y[4];
     STATES[ZETAW] = y[5];
     STATES[dCd_dt] = 0.;
+    printf("initialisation\n");
+    for (int zz = 0; zz<7; zz++){
+        printf("%lf\n", RATES[zz]);
+    }
 
     // STATES[XS] = 0.;
     // STATES[XW] = 0.;
@@ -130,14 +134,23 @@ void Land_2016::computeRates(double TIME, double *CONSTANTS, double *RATES, doub
 {
 // XB model
 
-double temp_lambda;
-if (temp_lambda > 0.87){
-    temp_lambda = 0.87;
-}
+// lambda = min(1.2,lambda);
+// Lfac =  max(0, 1 + beta_0 * (lambda + min(0.87,lambda) - 1.87) );
 
-ALGEBRAIC[Lfac]  = CONSTANTS[beta_0] * (CONSTANTS[lambda] + temp_lambda - 1.87);
+// double temp_lambda = CONSTANTS[lambda];
+// double temp_lambda;
+// if (temp_lambda > 0.87){
+//     temp_lambda = 0.87;
+// }
+
+//  for (int zz = 0; zz<6; zz++){
+//         printf("%lf\n", RATES[zz]);
+//     }
+
+CONSTANTS[lambda] = fmin(1.2, CONSTANTS[lambda]);
+ALGEBRAIC[Lfac]  = fmax(0, 1 + CONSTANTS[beta_0] * (CONSTANTS[lambda] + fmin(0.87, CONSTANTS[lambda]) - 1.87));
 // disini gak ngubah apa2 (nilai Lfac gak berubah karena temp lambda selalu pas gitu)
-printf("%lf = %lf * (%lf + %lf - 1.87)\n", ALGEBRAIC[Lfac], CONSTANTS[beta_0], CONSTANTS[lambda], temp_lambda );
+// printf("%lf = 1 + %lf * (%lf + %lf - 1.87)\n", ALGEBRAIC[Lfac], CONSTANTS[beta_0], CONSTANTS[lambda], fmin(0.87, CONSTANTS[lambda]) );
 if (ALGEBRAIC[Lfac] < 0){
     ALGEBRAIC[Lfac] = 0 ;
 }
@@ -150,16 +163,29 @@ ALGEBRAIC[k_su] = CONSTANTS[k_ws] * (1/CONSTANTS[dr] - 1) * CONSTANTS[wfrac];
 ALGEBRAIC[A] = (0.25 * CONSTANTS[TOT_A]) / ((1-CONSTANTS[dr])*CONSTANTS[wfrac] + CONSTANTS[dr]) * (CONSTANTS[dr]/0.25);
 
 
-ALGEBRAIC[XU] = (1 - ALGEBRAIC[TmBlocked]) - ALGEBRAIC[XW] - ALGEBRAIC[XS]; 
+ALGEBRAIC[XU] = (1 - STATES[TmBlocked]) - STATES[XW] - STATES[XS]; 
+// printf("ALGEBRAIC[XU] = (1 - STATES[TmBlocked]) - STATES[XW] - STATES[XS] \n");
+// printf("%lf = (1 - %lf) - %lf - %lf \n", ALGEBRAIC[XU], STATES[TmBlocked], STATES[XW], STATES[XS]);
 // unattached available xb = all - tm blocked - already prepowerstroke - already post-poststroke - no overlap
 
 ALGEBRAIC[xb_ws] = CONSTANTS[k_ws] * STATES[XW];
 ALGEBRAIC[xb_uw] = CONSTANTS[k_uw] * ALGEBRAIC[XU];
+// printf("ALGEBRAIC[xb_uw] = CONSTANTS[k_uw] * ALGEBRAIC[XU]; \n");
+// printf("%lf = %lf * %lf \n", ALGEBRAIC[xb_uw],  CONSTANTS[k_uw],  ALGEBRAIC[XU]);
 ALGEBRAIC[xb_wu] = ALGEBRAIC[k_wu] * STATES[XW];
 ALGEBRAIC[xb_su] = ALGEBRAIC[k_su] * STATES[XS];
 
 // element wise multiplication:
-ALGEBRAIC[gamma_rate] = CONSTANTS[gamma_idx] * fmax((STATES[ZETAS] > 0) * STATES[ZETAS], (STATES[ZETAS] < -1) * (-1*STATES[ZETAS] - 1));
+double temp_zetas1, temp_zetas2;
+temp_zetas1=temp_zetas2=0;
+if(STATES[ZETAS] > 0){
+    temp_zetas1 = STATES[ZETAS];
+}
+if (STATES[ZETAS]<-1){
+    temp_zetas2 = -1 * STATES[ZETAS] -1; 
+}
+
+ALGEBRAIC[gamma_rate] = CONSTANTS[gamma_idx] * fmax( temp_zetas1, temp_zetas2);
 ALGEBRAIC[xb_su_gamma] = ALGEBRAIC[gamma_rate] * STATES[XS];
 
 ALGEBRAIC[gamma_rate_w] = CONSTANTS[gamma_wu] * fabs(STATES[ZETAW]); //weak xbs don't like being strained
@@ -175,15 +201,16 @@ ALGEBRAIC[xb_wu_gamma] = ALGEBRAIC[gamma_rate_w] * STATES[XW];
 
 RATES[XS] = ALGEBRAIC[xb_ws] - ALGEBRAIC[xb_su] - ALGEBRAIC[xb_wu_gamma];
 RATES[XW] = ALGEBRAIC[xb_uw] - ALGEBRAIC[xb_wu] - ALGEBRAIC[xb_ws] - ALGEBRAIC[xb_wu_gamma];
-
+// printf("RATES[XW] = ALGEBRAIC[xb_uw] - ALGEBRAIC[xb_wu] - ALGEBRAIC[xb_ws] - ALGEBRAIC[xb_wu_gamma]; \n");
+// printf("%lf = %lf - %lf - %lf - %lf\n", RATES[XW], ALGEBRAIC[xb_uw], ALGEBRAIC[xb_wu],  ALGEBRAIC[xb_ws], ALGEBRAIC[xb_wu_gamma]);
 ALGEBRAIC[ca50] = ALGEBRAIC[ca50] + ALGEBRAIC[beta_1] * fmin(0.2, CONSTANTS[lambda] - 1);
 RATES[TRPN] = CONSTANTS[koff] * (pow((CONSTANTS[Cai] / CONSTANTS[ca50]), CONSTANTS[TRPN_n]) * (1 - STATES[TRPN]) - STATES[TRPN]);
 
 ALGEBRAIC[XSSS] = CONSTANTS[dr] * 0.5;
 ALGEBRAIC[XWSS] = (1 - CONSTANTS[dr]) * CONSTANTS[wfrac] * 0.5;
-ALGEBRAIC[ktm_block]= CONSTANTS[ktm_unblock] * pow((CONSTANTS[perm50] * CONSTANTS[nperm]), 0.5) * 0.5 / (0.5 - ALGEBRAIC[XSSS] - ALGEBRAIC[XWSS]);
+ALGEBRAIC[ktm_block]= CONSTANTS[ktm_unblock] * (pow(CONSTANTS[perm50], CONSTANTS[nperm]) * 0.5) / (0.5 - ALGEBRAIC[XSSS] - ALGEBRAIC[XWSS]);
 
-RATES[TmBlocked] = CONSTANTS[ktm_block] * fmin(100, pow(RATES[TRPN], - (CONSTANTS[nperm] / 2))) * ALGEBRAIC[XU] - CONSTANTS[ktm_unblock]  * pow(RATES[TRPN], CONSTANTS[nperm] / 2) * STATES[TmBlocked];
+RATES[TmBlocked] = CONSTANTS[ktm_block] * fmin(100, pow(STATES[TRPN], -(CONSTANTS[nperm] / 2))) * ALGEBRAIC[XU] - CONSTANTS[ktm_unblock]  * pow(STATES[TRPN], (CONSTANTS[nperm] / 2)) * STATES[TmBlocked];
 //-------------------------------------------------------------------------------
 // Velocity dependence -- assumes distortion resets on W->S
 
@@ -204,18 +231,20 @@ RATES[ZETAW] = CONSTANTS[A] * CONSTANTS[dlambda_dt] - CONSTANTS[cdw] * STATES[ZE
         eta = CONSTANTS[eta_l];
     }
 
-    RATES[dCd_dt] = CONSTANTS[par_k] * (C - Cd) / eta;;
+    RATES[dCd_dt] = CONSTANTS[par_k] * (C - Cd) / eta;
 
-    ALGEBRAIC[Fd] = eta * dCd_dt;
-    ALGEBRAIC[F1] = (exp(b * C) - 1);
-    ALGEBRAIC[Tp] = CONSTANTS[a]* (ALGEBRAIC[F1] + ALGEBRAIC[Fd]);
+    ALGEBRAIC[Fd] = eta * RATES[dCd_dt];
+    ALGEBRAIC[F1] = (exp(CONSTANTS[b] * C) - 1);
+    ALGEBRAIC[Tp] = CONSTANTS[a] * (ALGEBRAIC[F1] + ALGEBRAIC[Fd]);
 
     //-------------------------------------------------------------------------------
     // Active and Total Force
     //-------------------------------------------------------------------------------
 
-    ALGEBRAIC[Ta] = ALGEBRAIC[Lfac] * (CONSTANTS[Tref] / CONSTANTS[dr]) * ((STATES[ZETAS] + 1) * STATES[XS] + (STATES[ZETAW])*STATES[XS]);
+    ALGEBRAIC[Ta] = ALGEBRAIC[Lfac] * (CONSTANTS[Tref] / CONSTANTS[dr]) * ((STATES[ZETAS] + 1) * STATES[XS] + (STATES[ZETAW])*STATES[XW]);
+    // printf("%lf = %lf * (%lf / %lf) * ((%lf +1 ) * %lf + (%lf) * %lf)\n", ALGEBRAIC[Ta], ALGEBRAIC[Lfac], CONSTANTS[Tref], CONSTANTS[dr], STATES[ZETAS], STATES[XS], STATES[ZETAW], STATES[XW]);
     ALGEBRAIC[T] = ALGEBRAIC[Ta] + ALGEBRAIC[Tp];
+    printf("%lf,%lf\n",TIME,ALGEBRAIC[T]);
 
 }
 
@@ -223,15 +252,15 @@ void Land_2016::solveEuler(double dt, double t, double Cai_input)
 {
 
     CONSTANTS[Cai] = Cai_input;
-    // printf("%f\n", Cai_input);
+    printf("%f\n", CONSTANTS[Cai]);
     STATES[XS] = STATES[XS] + RATES[XS] * dt;
     STATES[XW] = STATES[XW] + RATES[XW] * dt;
     STATES[TRPN] = STATES[TRPN] + RATES[TRPN] * dt;
     STATES[TmBlocked] = STATES[TmBlocked] + RATES[TmBlocked] * dt;
     STATES[ZETAS] = STATES[ZETAS] + RATES[ZETAS] * dt;
-    STATES[ZETAW] = STATES[ZETAW] + RATES[ZETAS] * dt;
+    STATES[ZETAW] = STATES[ZETAW] + RATES[ZETAW] * dt;
     STATES[dCd_dt] = STATES[dCd_dt] + RATES[dCd_dt] * dt;
-    // printf("%f %f %f\n",  ALGEBRAIC[Lfac], ALGEBRAIC[Ta] , ALGEBRAIC[Tp]);
+    printf("Lfac: %f Ta: %f Tp: %f\n",  ALGEBRAIC[Lfac], ALGEBRAIC[Ta] , ALGEBRAIC[Tp]);
     // karena Lfac 0, jadi Ta nya 0
     // printf("rates: %f %f %f\n",  RATES[XS] , RATES[XW], RATES[TRPN] );
 }

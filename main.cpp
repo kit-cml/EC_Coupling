@@ -110,7 +110,7 @@ int main(int argc, char **argv)
   double y[6] = {0.0, 0.0, 1.0, 0.0, 0.0, 0.0};
   p_cell = new Land_2016();
   printf("calling the Land cell model\n");
-  p_cell->initConsts(false, true, y);
+  p_cell->initConsts(false, false, y);
   printf("Initialising\n");
 #else
   printf("Using O'Hara Rudy cell model\n");
@@ -132,6 +132,7 @@ int main(int argc, char **argv)
   bcl = 1000.;
   tcurr = 0.0;
   dt = 0.001;
+  // dt = 0.01;
   tnext = tcurr+dt;
 
   // p_cell->CONSTANTS[BCL] = bcl;
@@ -257,10 +258,10 @@ int main(int argc, char **argv)
 #ifdef DEBUG
 		//if(tcurr <= 300.0) printf("%lf,%lf,%lf\n", tcurr,dt, p_cell->STATES[v]);
 #endif
-    //if( tcurr > (bcl*(pace_max-1))  ){
+    // if( tcurr > (bcl*(pace_max-1))  ){
       // fprintf(fp_inet, "%lf,%lf\n", tcurr, inet);
       // fprintf(fp_qnet, "%lf,%lf\n", tcurr, qnet/1000.);
-      fprintf(fp_vm, "%lf,%lf\n", tcurr, p_cell->ALGEBRAIC[T]);
+      // fprintf(fp_vm, "%lf,%lf\n", tcurr, p_cell->ALGEBRAIC[T]);
       // fprintf(fp_icurr, "%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n", tcurr,
       //                   p_cell->ALGEBRAIC[INa], p_cell->ALGEBRAIC[IKr], p_cell->ALGEBRAIC[IKs],
       //                   p_cell->ALGEBRAIC[IK1], p_cell->ALGEBRAIC[Ito], p_cell->ALGEBRAIC[ICaL]);
@@ -268,7 +269,7 @@ int main(int argc, char **argv)
 			// fprintf(fp_timestep, "%lf,%lf\n", tcurr,dt);
 			// fprintf(fp_ikr_gates, "%lf,%lf,%lf,%lf,%lf,%lf\n", 
 			// 											tcurr,p_cell->STATES[O],p_cell->STATES[I],p_cell->STATES[C1],p_cell->STATES[C2],p_cell->STATES[C3]);
-    //}
+    // }
     tcurr += dt;
   }
   toc();
