@@ -107,7 +107,7 @@ int main(int argc, char **argv)
 
 #ifdef LAND_2016
   printf("Using Land cell model\n");
-  double y[6] = {0.0, 0.0, 1.0, 0.0, 0.0, 0.0};
+  double y[7] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0};
   p_cell = new Land_2016();
   printf("calling the Land cell model\n");
   p_cell->initConsts(false, false, y);
@@ -204,10 +204,11 @@ int main(int argc, char **argv)
   {
     // compute ODE at tcurr
     p_cell->computeRates(tcurr,
-		         p_cell->CONSTANTS,
+		             p_cell->CONSTANTS,
             		 p_cell->RATES,
-		         p_cell->STATES,
-            		 p_cell->ALGEBRAIC);
+		             p_cell->STATES,
+            		 p_cell->ALGEBRAIC,
+                 y);
 
 #ifdef LAND_2016
 		// dt_set = Land_2016::set_time_step(tcurr,

@@ -93,11 +93,11 @@ if (CONSTANTS[lambda] >= 1.2){
     STATES[TmBlocked] = y[3];
     STATES[ZETAS] = y[4];
     STATES[ZETAW] = y[5];
-    STATES[dCd_dt] = 0.;
+    STATES[dCd_dt] = y[6];
     printf("initialisation\n");
-    for (int zz = 0; zz<7; zz++){
-        printf("%lf\n", RATES[zz]);
-    }
+    // for (int zz = 0; zz<7; zz++){
+    //     printf("%lf\n", RATES[zz]);
+    // }
 
     // STATES[XS] = 0.;
     // STATES[XW] = 0.;
@@ -130,7 +130,7 @@ if (CONSTANTS[lambda] >= 1.2){
 	
 // }
 
-void Land_2016::computeRates(double TIME, double *CONSTANTS, double *RATES, double *STATES, double *ALGEBRAIC)
+void Land_2016::computeRates(double TIME, double *CONSTANTS, double *RATES, double *STATES, double *ALGEBRAIC, double *y)
 {
 // XB model
 
@@ -221,7 +221,7 @@ RATES[ZETAW] = CONSTANTS[A] * CONSTANTS[dlambda_dt] - CONSTANTS[cdw] * STATES[ZE
     // Passive model
     //-------------------------------------------------------------------------------
 
-    double Cd = RATES[dCd_dt];
+    double Cd = STATES[dCd_dt]; // this is quite scary, did not fix the problem but Cd actually y[6] aka y(7)
     double C = CONSTANTS[lambda] - 1;
     double eta;
 
@@ -252,7 +252,8 @@ void Land_2016::solveEuler(double dt, double t, double Cai_input)
 {
 
     CONSTANTS[Cai] = Cai_input;
-    printf("Cai: %lf dt: %lf t: %lf\n", CONSTANTS[Cai],dt,t);
+    // printf("Cai: %lf dt: %lf t: %lf\n", CONSTANTS[Cai],dt,t);
+    printf("%lf,%lf\n", t,ALGEBRAIC[T]);
     STATES[XS] = STATES[XS] + RATES[XS] * dt;
     STATES[XW] = STATES[XW] + RATES[XW] * dt;
     STATES[TRPN] = STATES[TRPN] + RATES[TRPN] * dt;
