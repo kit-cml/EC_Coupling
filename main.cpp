@@ -22,8 +22,8 @@ clock_t tic()
 void toc(clock_t start = START_TIMER)
 {
   std::cout
-      << "Elapsed time: "
-      << (clock() - start) / (double)CLOCKS_PER_SEC << "s"
+      // << "Elapsed time: "
+      // << (clock() - start) / (double)CLOCKS_PER_SEC << "s"
       << std::endl;
 }
 
@@ -235,7 +235,7 @@ int main(int argc, char **argv)
     else {
       dt = (floor(tcurr / bcl) + 1) * bcl - tcurr;
       inet = 0.;
-      if(floor(tcurr)==floor(bcl*pace_max)) printf("Qnet final value: %lf\n", qnet/1000.0);
+      if(floor(tcurr)==floor(bcl*pace_max)) //printf("Qnet final value: %lf\n", qnet/1000.0);
       qnet = 0.;
     }
 #ifdef LAND_2016
@@ -318,7 +318,7 @@ int main(int argc, char **argv)
 
   for(icount = 0; icount < p_cell->states_size; icount++ ) fprintf( fp_output, "%lf\n", p_cell->STATES[icount] );
 
-  printf("Qnet final value: %lf\n", qnet/1000.0);
+  // printf("Qnet final value: %lf\n", qnet/1000.0);
 
   // fclose(fp_output);
   fclose(fp_vm);

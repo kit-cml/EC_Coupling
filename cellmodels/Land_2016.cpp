@@ -78,9 +78,10 @@ if (CONSTANTS[lambda] >= 1.2){
     CONSTANTS[nu] = 7;
     CONSTANTS[mu] = 3; 
     }
-    if (BETA){
-        CONSTANTS[beta_1] = -2.4;
-        CONSTANTS[beta_0] = 2.3;
+    if (BETA == true){
+        // // input an array of beta, 
+        // CONSTANTS[beta_1] = beta[1];
+        // CONSTANTS[beta_0] = beta[0];
     }
     
     // k_ws = 0.004 * mu;
@@ -96,7 +97,7 @@ if (CONSTANTS[lambda] >= 1.2){
     STATES[ZETAS] = y[4];
     STATES[ZETAW] = y[5];
     STATES[dCd_dt] = y[6];
-    printf("initialisation\n");
+    // printf("initialisation\n");
 
 
     // seventh state is below, in passive model (dCd_dt)
@@ -227,7 +228,6 @@ ALGEBRAIC[Fd] = eta * STATES[dCd_dt];
 ALGEBRAIC[F1] = (exp(CONSTANTS[b] * CONSTANTS[C]) - 1);
 // Tp = a * (F1 + Fd);
 ALGEBRAIC[Tp] = CONSTANTS[a] * (ALGEBRAIC[F1] + ALGEBRAIC[Fd]);
-// printf("a. F1. Fd: %f %f %f\n",  CONSTANTS[a] , ALGEBRAIC[F1], ALGEBRAIC[Fd] );
 
 //-------------------------------------------------------------------------------
 // Active and Total Force
