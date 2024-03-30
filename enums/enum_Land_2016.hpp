@@ -29,6 +29,9 @@ enum E_CONSTANTS_T{
     eta_l = 24,
     eta_s = 25,
     a = 26,
+    C = 27,
+    Cd = 28,
+    eta = 29,
 };
 
 enum E_ALGEBRAIC_T{
