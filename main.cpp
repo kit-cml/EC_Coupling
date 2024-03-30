@@ -132,7 +132,7 @@ int main(int argc, char **argv)
   bcl = 1000.;
   tcurr = 0.0;
   dt = 0.001;
-  // dt = 0.01;
+  // dt = 1.;
   tnext = tcurr+dt;
 
   // p_cell->CONSTANTS[BCL] = bcl;
