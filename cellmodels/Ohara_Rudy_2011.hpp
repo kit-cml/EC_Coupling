@@ -10,6 +10,7 @@ public:
   Ohara_Rudy_2011();
   ~Ohara_Rudy_2011();
   void initConsts ();
+  void computeRates();
   void computeRates( double TIME, double *CONSTANTS, double *RATES, double *STATES, double *ALGEBRAIC );
   void solveAnalytical( double dt );
   static double set_time_step(double TIME,double time_point,double max_time_step,

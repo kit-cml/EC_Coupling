@@ -452,6 +452,17 @@ delete []STATES;
 
 void Ohara_Rudy_2011::initConsts()
 {
+
+}
+
+void Ohara_Rudy_2011::computeRates()
+{
+
+}
+
+
+void Ohara_Rudy_2011::initConsts()
+{
 CONSTANTS[celltype] = 0;
 CONSTANTS[nao] = 140;
 CONSTANTS[cao] = 1.8;

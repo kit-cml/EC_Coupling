@@ -245,11 +245,11 @@ int main(int argc, char **argv)
     // idx_temp++;
     
     // printf("%d %f\n",cai_index, Cai_input[cai_index]);
-    p_cell->solveEuler(dt, tcurr, Cai_input[cai_index]);
+    p_cell->solveEuler(dt, tcurr, p_cell->STATES[cai]);
 
     //Compute the analytical solution
 #else
-    p_cell->solveAnalytical(dt);
+    p_cell->solveAnalytical(dt, CONSTANTS[cai]);
     //p_cell->solveRK4(tcurr, dt);
 #endif
     // if(p_cell->STATES[v] > -88.0){
