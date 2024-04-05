@@ -94,6 +94,60 @@ int main(int argc, char **argv)
   double y[7] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0};
   contr_cell = new Land_2016();
   chem_cell = new Ohara_Rudy_2011();
+  printf("Initialising\n");
+  chem_cell->initConsts();
+  contr_cell->initConsts(false, false, y);
+
+  pace_max = 1;
+  bcl = 1000.;
+  tcurr = 0.0;
+  dt = 0.001;
+  // dt = 1.;
+  tnext = tcurr+dt;
+  
+  tic();
+  printf("Analytical method\n");
+  double tmax = pace_max*bcl;
+  // double tmax = 281.;
+  double max_time_step = 1.0;
+  double time_point = 25.0;
+  double dt_set;
+
+  while (tcurr<tmax){
+    contr_cell->computeRates(tcurr,
+		             contr_cell->CONSTANTS,
+            		 contr_cell->RATES,
+		             contr_cell->STATES,
+            		 contr_cell->ALGEBRAIC,
+                 y);
+
+    dt_set = Ohara_Rudy_2011::set_time_step(tcurr,
+               time_point,
+               max_time_step,
+               chem_cell->CONSTANTS,
+               chem_cell->RATES,
+               chem_cell->STATES,
+               chem_cell->ALGEBRAIC);
+
+    // compute accepted timestep
+    if (floor((tcurr + dt_set) / bcl) == floor(tcurr / bcl)) {
+      dt = dt_set;
+    }
+    else {
+      dt = (floor(tcurr / bcl) + 1) * bcl - tcurr;
+      inet = 0.;
+      if(floor(tcurr)==floor(bcl*pace_max)) //printf("Qnet final value: %lf\n", qnet/1000.0);
+      qnet = 0.;
+    }
+
+    contr_cell->solveEuler(dt, tcurr, chem_cell->STATES[cai]);
+    chem_cell->solveAnalytical(dt, contr_cell->CONSTANTS[cai]);
+
+    printf("%lf,%lf\n", tcurr,chem_cell->ALGEBRAIC[land_T]);
+
+tcurr += dt;
+}
 
 
+toc();
 }

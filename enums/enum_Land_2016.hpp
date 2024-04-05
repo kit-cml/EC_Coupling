@@ -28,7 +28,7 @@ enum E_CONSTANTS_T{
     b = 23,
     eta_l = 24,
     eta_s = 25,
-    a = 26,
+    land_a = 26,
     C = 27,
     Cd = 28,
     eta = 29,
@@ -58,7 +58,7 @@ enum E_ALGEBRAIC_T{
     F1 = 20,
     Tp = 21,
     Ta = 22,
-    T = 23,
+    land_T = 23,
 };
 
 enum E_STATES_T{

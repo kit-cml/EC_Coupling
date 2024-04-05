@@ -106,7 +106,7 @@ if (CONSTANTS[lambda] >= 1.2){
     CONSTANTS[b] = 9.1;
     CONSTANTS[eta_l] = 200;
     CONSTANTS[eta_s] = 20;
-    CONSTANTS[a] = 2.1;
+    CONSTANTS[land_a] = 2.1;
 
 }
 
@@ -227,7 +227,7 @@ ALGEBRAIC[Fd] = eta * STATES[dCd_dt];
 // F1 = (exp( b * C) - 1);
 ALGEBRAIC[F1] = (exp(CONSTANTS[b] * CONSTANTS[C]) - 1);
 // Tp = a * (F1 + Fd);
-ALGEBRAIC[Tp] = CONSTANTS[a] * (ALGEBRAIC[F1] + ALGEBRAIC[Fd]);
+ALGEBRAIC[Tp] = CONSTANTS[land_a] * (ALGEBRAIC[F1] + ALGEBRAIC[Fd]);
 
 //-------------------------------------------------------------------------------
 // Active and Total Force
@@ -236,7 +236,7 @@ ALGEBRAIC[Tp] = CONSTANTS[a] * (ALGEBRAIC[F1] + ALGEBRAIC[Fd]);
 // Ta = Lfac * (Tref/dr) * ( (ZETAS+1) * XS + (ZETAW) * XW );
 // T = Ta + Tp;
 ALGEBRAIC[Ta] = ALGEBRAIC[Lfac] * (CONSTANTS[Tref] / CONSTANTS[dr]) * ((STATES[ZETAS] + 1) * STATES[XS] + (STATES[ZETAW])*STATES[XW]);
-ALGEBRAIC[T] = ALGEBRAIC[Ta] + ALGEBRAIC[Tp];
+ALGEBRAIC[land_T] = ALGEBRAIC[Ta] + ALGEBRAIC[Tp];
 
 }
 
@@ -244,7 +244,7 @@ void Land_2016::solveEuler(double dt, double t, double Cai_input)
 {
 
     CONSTANTS[Cai] = Cai_input;
-    printf("%lf,%lf\n", t,ALGEBRAIC[T]);
+    // printf("%lf,%lf\n", t,ALGEBRAIC[land_T]);
     STATES[XS] = STATES[XS] + RATES[XS] * dt;
     STATES[XW] = STATES[XW] + RATES[XW] * dt;
     STATES[TRPN] = STATES[TRPN] + RATES[TRPN] * dt;

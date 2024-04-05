@@ -1,7 +1,7 @@
 #ifndef EN_OHARA_RUDY_2011_HPP
 #define EN_OHARA_RUDY_2011_HPP
 
-enum E_ALGEBRAIC_T{
+enum ALGEBRAIC{
   vffrt = 29,
   vfrt = 39,
   INa = 62,
@@ -202,7 +202,7 @@ enum E_ALGEBRAIC_T{
   Jleak = 195,
 };
 
-enum E_CONSTANTS_T{
+enum CONSTANTS{
   celltype = 0,
   nao = 1,
   cao = 2,
@@ -346,7 +346,7 @@ enum E_CONSTANTS_T{
   BCL = 140,
 };
 
-enum E_STATES_T{
+enum STATES{
   v = 0,
   CaMKt = 1,
   cass = 2,
