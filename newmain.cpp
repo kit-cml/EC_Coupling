@@ -1,5 +1,5 @@
 #include "cellmodels/Ohara_Rudy_2011.hpp"
-#include "cellmodels/Land_2016.hpp"
+// #include "cellmodels/Land_2016.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 
   // cell object pointer
   Cellmodel* chem_cell; 
-  Cellmodel* contr_cell;
+  // Cellmodel* contr_cell;
 
   // input variables for cell simulation
   double bcl, dt;
@@ -92,14 +92,14 @@ int main(int argc, char **argv)
 
   printf("Using ORd x Land cell model\n");
   double y[7] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0};
-  contr_cell = new Land_2016();
+  // contr_cell = new Land_2016();
   chem_cell = new Ohara_Rudy_2011();
   printf("Initialising\n");
   chem_cell->initConsts();
-  contr_cell->initConsts(false, false, y);
+  // contr_cell->initConsts(false, false, y);
 
   pace_max = 1;
-  bcl = 1000.;
+  bcl = 2000.;
   tcurr = 0.0;
   dt = 0.001;
   // dt = 1.;
@@ -114,12 +114,20 @@ int main(int argc, char **argv)
   double dt_set;
 
   while (tcurr<tmax){
-    contr_cell->computeRates(tcurr,
-		             contr_cell->CONSTANTS,
-            		 contr_cell->RATES,
-		             contr_cell->STATES,
-            		 contr_cell->ALGEBRAIC,
-                 y);
+       // compute ODE at tcurr
+    chem_cell->computeRates(tcurr,
+		             chem_cell->CONSTANTS,
+            		 chem_cell->RATES,
+		             chem_cell->STATES,
+            		 chem_cell->ALGEBRAIC);
+
+
+    // contr_cell->computeRates(tcurr,
+		//              contr_cell->CONSTANTS,
+    //         		 contr_cell->RATES,
+		//              contr_cell->STATES,
+    //         		 contr_cell->ALGEBRAIC,
+    //              y);
 
     dt_set = Ohara_Rudy_2011::set_time_step(tcurr,
                time_point,
@@ -140,14 +148,14 @@ int main(int argc, char **argv)
       qnet = 0.;
     }
 
-    contr_cell->solveEuler(dt, tcurr, chem_cell->STATES[cai]);
-    chem_cell->solveAnalytical(dt, contr_cell->CONSTANTS[cai]);
+    // contr_cell->solveEuler(dt, tcurr, chem_cell->STATES[cai]);
+    // chem_cell->solveAnalytical(dt, contr_cell->CONSTANTS[Cai]);
+    chem_cell->solveAnalytical(dt);
 
-    printf("%lf,%lf\n", tcurr,chem_cell->ALGEBRAIC[land_T]);
+    printf("%lf,%lf\n", tcurr,chem_cell->STATES[v]);
 
-tcurr += dt;
+  tcurr += dt;
 }
-
 
 toc();
 }

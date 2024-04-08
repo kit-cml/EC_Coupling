@@ -1,0 +1,3 @@
+Compile newmain for testing:
+g++ -o newmain cellmodels/Land_2016.o cellmodels/Ohara_Rudy_2011.o -g -L/usr/local/lib newmain.cpp 
+make sure all of the imported library has a .o format! (aka. compile them first!)
