@@ -1,4 +1,4 @@
 *.plt
 *.dat
-*.o
+
 bin/orudy_cell_sim

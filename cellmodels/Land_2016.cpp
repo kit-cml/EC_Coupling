@@ -27,6 +27,11 @@ void Land_2016::initConsts()
 
 }
 
+void Land_2016::computeRates()
+{
+
+}
+
 
 void Land_2016::initConsts(bool is_skinned, bool BETA, double *y)
 {

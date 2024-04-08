@@ -450,10 +450,10 @@ delete []RATES;
 delete []STATES;
 }
 
-void Ohara_Rudy_2011::initConsts()
-{
+// void Ohara_Rudy_2011::initConsts()
+// {
 
-}
+// }
 
 void Ohara_Rudy_2011::computeRates()
 {

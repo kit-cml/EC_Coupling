@@ -245,7 +245,7 @@ int main(int argc, char **argv)
     // idx_temp++;
     
     // printf("%d %f\n",cai_index, Cai_input[cai_index]);
-    p_cell->solveEuler(dt, tcurr, p_cell->STATES[cai]);
+    p_cell->solveEuler(dt, tcurr, Cai_input[cai_index]);
 
     //Compute the analytical solution
 #else
