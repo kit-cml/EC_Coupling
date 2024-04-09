@@ -28,7 +28,7 @@ CXX := g++
 CXXFLAGS += -Wall
 # Use this if you want to use Land 2019 cell model.
 # Otherwise, comment it
-CXXFLAGS += -DLAND_2016
+# CXXFLAGS += -DLAND_2016
 # Use this if you want to use analytical solution.
 # Otherwise, comment it
 CXXFLAGS += -DANALYTICAL

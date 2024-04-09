@@ -202,24 +202,23 @@ int main(int argc, char **argv)
   double dt_set;
   while(tcurr < tmax)
   {
-    // compute ODE at tcurr
+
+#ifdef LAND_2016
+      // compute ODE at tcurr
     p_cell->computeRates(tcurr,
 		             p_cell->CONSTANTS,
             		 p_cell->RATES,
 		             p_cell->STATES,
-            		 p_cell->ALGEBRAIC,
-                 y);
-
-#ifdef LAND_2016
-		// dt_set = Land_2016::set_time_step(tcurr,
-    //            time_point,
-    //            max_time_step,
-    //              p_cell->CONSTANTS,
-    //            p_cell->RATES,
-    //      p_cell->STATES,
-    //            p_cell->ALGEBRAIC);
+            		 p_cell->ALGEBRAIC,y);
+	
     dt_set = dt;
 #else
+        // compute ODE at tcurr
+    p_cell->computeRates(tcurr,
+		             p_cell->CONSTANTS,
+            		 p_cell->RATES,
+		             p_cell->STATES,
+            		 p_cell->ALGEBRAIC);
     dt_set = Ohara_Rudy_2011::set_time_step(tcurr,
         		    time_point,
 		            max_time_step,
@@ -249,7 +248,8 @@ int main(int argc, char **argv)
 
     //Compute the analytical solution
 #else
-    p_cell->solveAnalytical(dt, CONSTANTS[cai]);
+    p_cell->solveAnalytical(dt);
+    printf("%lf,%lf\n", tcurr,p_cell->STATES[v]);
     //p_cell->solveRK4(tcurr, dt);
 #endif
     // if(p_cell->STATES[v] > -88.0){
@@ -320,14 +320,16 @@ int main(int argc, char **argv)
 
   // printf("Qnet final value: %lf\n", qnet/1000.0);
 
-  // fclose(fp_output);
+#ifndef LAND_2016
+  fclose(fp_output);
   fclose(fp_vm);
-  // fclose(fp_icurr);
-  // fclose(fp_conc);
-  // fclose(fp_qnet);
-  // fclose(fp_inet);
-	// fclose(fp_ikr_gates);
-	// fclose(fp_timestep);
+  fclose(fp_icurr);
+  fclose(fp_conc);
+  fclose(fp_qnet);
+  fclose(fp_inet);
+	fclose(fp_ikr_gates);
+	fclose(fp_timestep);
+#endif
 
   delete p_cell;
 

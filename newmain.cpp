@@ -1,5 +1,5 @@
 #include "cellmodels/Ohara_Rudy_2011.hpp"
-// #include "cellmodels/Land_2016.hpp"
+#include "cellmodels/Land_2016.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -25,38 +25,38 @@ void toc(clock_t start = START_TIMER)
       << std::endl;
 }
 
-// int get_cai_data_from_file(const char* file_name, double *cai)
-// {
-//   //put them in as array of double
-//   FILE *fp_cai;
+int get_cai_data_from_file(const char* file_name, double *cai)
+{
+  //put them in as array of double
+  FILE *fp_cai;
   
-//   char *token, buffer[255];
-//   unsigned short idx;
+  char *token, buffer[255];
+  unsigned short idx;
 
-//   if( (fp_cai = fopen(file_name, "r")) == NULL){
-//     printf("Cannot open file %s\n",
-//       file_name);
-//     return 0;
-//   }
+  if( (fp_cai = fopen(file_name, "r")) == NULL){
+    printf("Cannot open file %s\n",
+      file_name);
+    return 0;
+  }
 
-//   idx = 0;
-//   int sample_size = 0;
+  idx = 0;
+  int sample_size = 0;
 
-//   fgets(buffer, sizeof(buffer), fp_cai); // skip header
-//   while( fgets(buffer, sizeof(buffer), fp_cai) != NULL )
-//   { // begin line reading
-//     token = strtok( buffer, "," );
-//     while( token != NULL )
-//     { // begin data tokenizing
-//       cai[idx++] = strtod(token, NULL);
-//       token = strtok(NULL, ",");
-//     } // end data tokenizing
-//      sample_size++;
-//   } // end line reading
+  fgets(buffer, sizeof(buffer), fp_cai); // skip header
+  while( fgets(buffer, sizeof(buffer), fp_cai) != NULL )
+  { // begin line reading
+    token = strtok( buffer, "," );
+    while( token != NULL )
+    { // begin data tokenizing
+      cai[idx++] = strtod(token, NULL);
+      token = strtok(NULL, ",");
+    } // end data tokenizing
+     sample_size++;
+  } // end line reading
 
-//   fclose(fp_cai);
-//   return sample_size;
-// }
+  fclose(fp_cai);
+  return sample_size;
+}
 
 int main(int argc, char **argv)
 {
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 
   // cell object pointer
   Cellmodel* chem_cell; 
-  // Cellmodel* contr_cell;
+  Cellmodel* contr_cell;
 
   // input variables for cell simulation
   double bcl, dt;
@@ -90,16 +90,26 @@ int main(int argc, char **argv)
   FILE* fp_timestep;
   FILE* fp_ikr_gates;
 
+  int idx=0;
+  double temp_Cai_input[2000],Cai_input[1000];
+  
+  int length = get_cai_data_from_file("./bin/cai_input.csv", temp_Cai_input);
+  for(int a = 1; a<2000; a = a+2){
+    Cai_input[idx] = temp_Cai_input[a];
+    idx++;
+}
+  int cai_index;
+
   printf("Using ORd x Land cell model\n");
   double y[7] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0};
-  // contr_cell = new Land_2016();
+  contr_cell = new Land_2016();
   chem_cell = new Ohara_Rudy_2011();
   printf("Initialising\n");
   chem_cell->initConsts();
-  // contr_cell->initConsts(false, false, y);
+  contr_cell->initConsts(false, false, y);
 
   pace_max = 1;
-  bcl = 2000.;
+  bcl = 1000.;
   tcurr = 0.0;
   dt = 0.001;
   // dt = 1.;
@@ -114,6 +124,7 @@ int main(int argc, char **argv)
   double dt_set;
 
   while (tcurr<tmax){
+    cai_index = tcurr;
        // compute ODE at tcurr
     chem_cell->computeRates(tcurr,
 		             chem_cell->CONSTANTS,
@@ -121,13 +132,12 @@ int main(int argc, char **argv)
 		             chem_cell->STATES,
             		 chem_cell->ALGEBRAIC);
 
-
-    // contr_cell->computeRates(tcurr,
-		//              contr_cell->CONSTANTS,
-    //         		 contr_cell->RATES,
-		//              contr_cell->STATES,
-    //         		 contr_cell->ALGEBRAIC,
-    //              y);
+    contr_cell->computeRates(tcurr,
+		             contr_cell->CONSTANTS,
+            		 contr_cell->RATES,
+		             contr_cell->STATES,
+            		 contr_cell->ALGEBRAIC,
+                 y);
 
     dt_set = Ohara_Rudy_2011::set_time_step(tcurr,
                time_point,
@@ -148,9 +158,18 @@ int main(int argc, char **argv)
       qnet = 0.;
     }
 
-    // contr_cell->solveEuler(dt, tcurr, chem_cell->STATES[cai]);
-    // chem_cell->solveAnalytical(dt, contr_cell->CONSTANTS[Cai]);
-    chem_cell->solveAnalytical(dt);
+    if(tcurr==0.0){
+      chem_cell->solveAnalytical(dt);
+      contr_cell->solveEuler(dt, tcurr, Cai_input[cai_index]);
+    }
+    else{
+      chem_cell->solveAnalytical(dt, Cai_input[cai_index]);
+      contr_cell->solveEuler(dt, tcurr, Cai_input[cai_index]);
+    }
+
+       
+    // chem_cell->solveAnalytical(dt, Cai_input[cai_index]);
+    //  chem_cell->solveAnalytical(dt);
 
     printf("%lf,%lf\n", tcurr,chem_cell->STATES[v]);
 
@@ -158,4 +177,7 @@ int main(int argc, char **argv)
 }
 
 toc();
+
+// delete contr_cell;
+// delete chem_cell;
 }

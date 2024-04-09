@@ -38,7 +38,7 @@ void Land_2016::initConsts(bool is_skinned, bool BETA, double *y)
     // user input
     CONSTANTS[dlambda_dt] = 0; 
     CONSTANTS[lambda] = 1;
-    CONSTANTS[Cai] = 0;
+    CONSTANTS[Cai] = 0.0;
     // if (t == -1) {
         RATES[XS] = 0;
         RATES[XW] = 0;
