@@ -130,7 +130,9 @@ int main(int argc, char **argv)
 		             chem_cell->CONSTANTS,
             		 chem_cell->RATES,
 		             chem_cell->STATES,
-            		 chem_cell->ALGEBRAIC);
+            		 chem_cell->ALGEBRAIC,
+                 contr_cell->STATES[TRPN]
+                 );
 
     contr_cell->computeRates(tcurr,
 		             contr_cell->CONSTANTS,
@@ -163,14 +165,15 @@ int main(int argc, char **argv)
       contr_cell->solveEuler(dt, tcurr, Cai_input[cai_index]);
     }
     else{
-      chem_cell->solveAnalytical(dt, Cai_input[cai_index]);
-      contr_cell->solveEuler(dt, tcurr, Cai_input[cai_index]);
+      chem_cell->solveAnalytical(dt);
+      contr_cell->solveEuler(dt, tcurr, chem_cell->STATES[cai]);
     }
 
-       
+    // contr_cell->solveEuler(dt, tcurr, Cai_input[cai_index]);
     // chem_cell->solveAnalytical(dt, Cai_input[cai_index]);
     //  chem_cell->solveAnalytical(dt);
 
+    // printf("%lf,%lf\n", tcurr,contr_cell->STATES[TRPN]);
     printf("%lf,%lf\n", tcurr,chem_cell->STATES[v]);
 
   tcurr += dt;

@@ -388,6 +388,7 @@ enum STATES{
   xk1 = 38,
   Jrelnp = 39,
   Jrelp = 40,
+  ca_trpn = 41,
 };
 
 #endif

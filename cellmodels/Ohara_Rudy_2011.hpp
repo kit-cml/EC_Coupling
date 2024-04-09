@@ -11,10 +11,10 @@ public:
   ~Ohara_Rudy_2011();
   void initConsts ();
   void computeRates();
-  void computeRates( double TIME, double *CONSTANTS, double *RATES, double *STATES, double *ALGEBRAIC );
+  void computeRates(double TIME, double *CONSTANTS, double *RATES, double *STATES, double *ALGEBRAIC, double land_trpn);
   // void solveAnalytical();
   void solveAnalytical( double dt);
-  void solveAnalytical( double dt, double Ca_TRPN );
+  // void solveAnalytical( double dt, double Ca_TRPN );
   static double set_time_step(double TIME,double time_point,double max_time_step,
       double* CONSTANTS,double* RATES,double* STATES,double* ALGEBRAIC);
 

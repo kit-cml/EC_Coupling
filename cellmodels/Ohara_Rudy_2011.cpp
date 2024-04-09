@@ -651,7 +651,7 @@ CONSTANTS[a4] = (( CONSTANTS[k4p]*CONSTANTS[MgATP])/CONSTANTS[Kmgatp])/(1.00000+
 CONSTANTS[Pnak] = (CONSTANTS[celltype]==1.00000 ?  CONSTANTS[Pnak_b]*0.900000 : CONSTANTS[celltype]==2.00000 ?  CONSTANTS[Pnak_b]*0.700000 : CONSTANTS[Pnak_b]);
 }
 
-void Ohara_Rudy_2011::computeRates( double TIME, double *CONSTANTS, double *RATES, double *STATES, double *ALGEBRAIC )
+void Ohara_Rudy_2011::computeRates( double TIME, double *CONSTANTS, double *RATES, double *STATES, double *ALGEBRAIC, double land_trpn )
 {
 ALGEBRAIC[Istim] = (TIME>=CONSTANTS[stim_start] && (TIME - CONSTANTS[stim_start]) - floor((TIME - CONSTANTS[stim_start])/CONSTANTS[BCL])*CONSTANTS[BCL]<=CONSTANTS[duration] ? CONSTANTS[amp] : 0.000000);
 ALGEBRAIC[hLss] = 1.00000/(1.00000+exp((STATES[v]+87.6100)/7.48800));
@@ -848,7 +848,7 @@ ALGEBRAIC[Jupp] = ( CONSTANTS[upScale]*2.75000*0.00437500*STATES[cai])/((STATES[
 ALGEBRAIC[fJupp] = 1.00000/(1.00000+CONSTANTS[KmCaMK]/ALGEBRAIC[CaMKa]);
 ALGEBRAIC[Jleak] = ( 0.00393750*STATES[cansr])/15.0000;
 ALGEBRAIC[Jup] = ( (1.00000 - ALGEBRAIC[fJupp])*ALGEBRAIC[Jupnp]+ ALGEBRAIC[fJupp]*ALGEBRAIC[Jupp]) - ALGEBRAIC[Jleak];
-ALGEBRAIC[Bcai] = 1.00000/(1.00000+( CONSTANTS[cmdnmax]*CONSTANTS[kmcmdn])/pow(CONSTANTS[kmcmdn]+STATES[cai], 2.00000)+( CONSTANTS[trpnmax]*CONSTANTS[kmtrpn])/pow(CONSTANTS[kmtrpn]+STATES[cai], 2.00000));
+ALGEBRAIC[Bcai] = 1.00000/(1.00000+( CONSTANTS[cmdnmax]*CONSTANTS[kmcmdn])/pow(CONSTANTS[kmcmdn]+STATES[cai], 2.00000)); // modified
 ALGEBRAIC[Jtr] = (STATES[cansr] - STATES[cajsr])/100.000;
 ALGEBRAIC[Bcajsr] = 1.00000/(1.00000+( CONSTANTS[csqnmax]*CONSTANTS[kmcsqn])/pow(CONSTANTS[kmcsqn]+STATES[cajsr], 2.00000));
 
@@ -890,9 +890,11 @@ RATES[nai] = ( - (ALGEBRAIC[INa]+ALGEBRAIC[INaL]+ 3.00000*ALGEBRAIC[INaCa_i]+ 3.
 RATES[nass] = ( - (ALGEBRAIC[ICaNa]+ 3.00000*ALGEBRAIC[INaCa_ss])*CONSTANTS[cm]*CONSTANTS[Acap])/( CONSTANTS[F]*CONSTANTS[vss]) - ALGEBRAIC[JdiffNa];
 RATES[v] = - (ALGEBRAIC[INa]+ALGEBRAIC[INaL]+ALGEBRAIC[Ito]+ALGEBRAIC[ICaL]+ALGEBRAIC[ICaNa]+ALGEBRAIC[ICaK]+ALGEBRAIC[IKr]+ALGEBRAIC[IKs]+ALGEBRAIC[IK1]+ALGEBRAIC[INaCa_i]+ALGEBRAIC[INaCa_ss]+ALGEBRAIC[INaK]+ALGEBRAIC[INab]+ALGEBRAIC[IKb]+ALGEBRAIC[IpCa]+ALGEBRAIC[ICab]+ALGEBRAIC[Istim]);
 RATES[cass] =  ALGEBRAIC[Bcass]*((( - (ALGEBRAIC[ICaL] -  2.00000*ALGEBRAIC[INaCa_ss])*CONSTANTS[cm]*CONSTANTS[Acap])/( 2.00000*CONSTANTS[F]*CONSTANTS[vss])+( ALGEBRAIC[Jrel]*CONSTANTS[vjsr])/CONSTANTS[vss]) - ALGEBRAIC[Jdiff]);
-RATES[cai] =  ALGEBRAIC[Bcai]*((( - ((ALGEBRAIC[IpCa]+ALGEBRAIC[ICab]) -  2.00000*ALGEBRAIC[INaCa_i])*CONSTANTS[cm]*CONSTANTS[Acap])/( 2.00000*CONSTANTS[F]*CONSTANTS[vmyo]) - ( ALGEBRAIC[Jup]*CONSTANTS[vnsr])/CONSTANTS[vmyo])+( ALGEBRAIC[Jdiff]*CONSTANTS[vss])/CONSTANTS[vmyo]);
+RATES[cai] =  ALGEBRAIC[Bcai]*((( - ((ALGEBRAIC[IpCa]+ALGEBRAIC[ICab]) -  2.00000*ALGEBRAIC[INaCa_i])*CONSTANTS[cm]*CONSTANTS[Acap])/( 2.00000*CONSTANTS[F]*CONSTANTS[vmyo]) - ( ALGEBRAIC[Jup]*CONSTANTS[vnsr])/CONSTANTS[vmyo])+( ALGEBRAIC[Jdiff]*CONSTANTS[vss])/CONSTANTS[vmyo] - STATES[ca_trpn]); //modified
 RATES[cansr] = ALGEBRAIC[Jup] - ( ALGEBRAIC[Jtr]*CONSTANTS[vjsr])/CONSTANTS[vnsr];
 RATES[cajsr] =  ALGEBRAIC[Bcajsr]*(ALGEBRAIC[Jtr] - ALGEBRAIC[Jrel]);
+//new
+RATES[ca_trpn] = CONSTANTS[trpnmax] * land_trpn;
 }
 
 void Ohara_Rudy_2011::solveAnalytical(double dt)
@@ -998,115 +1000,117 @@ void Ohara_Rudy_2011::solveAnalytical(double dt)
   STATES[cass] = STATES[cass] + RATES[cass] * dt;
   STATES[cansr] = STATES[cansr] + RATES[cansr] * dt;
   STATES[cajsr] = STATES[cajsr] + RATES[cajsr] * dt;
+  //new
+  STATES[ca_trpn] = STATES[ca_trpn] + RATES[ca_trpn] * dt;
 #endif
 }
 
-void Ohara_Rudy_2011::solveAnalytical(double dt, double Ca_TRPN)
-{
-#ifdef EULER
-  STATES[v] = STATES[v] + RATES[v] * dt;
-  STATES[CaMKt] = STATES[CaMKt] + RATES[CaMKt] * dt;
-  STATES[cass] = STATES[cass] + RATES[cass] * dt;
-  STATES[nai] = STATES[nai] + RATES[nai] * dt;
-  STATES[nass] = STATES[nass] + RATES[nass] * dt;
-  STATES[ki] = STATES[ki] + RATES[ki] * dt;
-  STATES[kss] = STATES[kss] + RATES[kss] * dt;
-  STATES[cansr] = STATES[cansr] + RATES[cansr] * dt;
-  STATES[cajsr] = STATES[cajsr] + RATES[cajsr] * dt;
-  STATES[cai] = STATES[cai] + RATES[cai] * dt;
-  STATES[m] = STATES[m] + RATES[m] * dt;
-  STATES[hf] = STATES[hf] + RATES[hf] * dt;
-  STATES[hs] = STATES[hs] + RATES[hs] * dt;
-  STATES[j] = STATES[j] + RATES[j] * dt;
-  STATES[hsp] = STATES[hsp] + RATES[hsp] * dt;
-  STATES[jp] = STATES[jp] + RATES[jp] * dt;
-  STATES[mL] = STATES[mL] + RATES[mL] * dt;
-  STATES[hL] = STATES[hL] + RATES[hL] * dt;
-  STATES[hLp] = STATES[hLp] + RATES[hLp] * dt;
-  STATES[a] = STATES[a] + RATES[a] * dt;
-  STATES[iF] = STATES[iF] + RATES[iF] * dt;
-  STATES[iS] = STATES[iS] + RATES[iS] * dt;
-  STATES[ap] = STATES[ap] + RATES[ap] * dt;
-  STATES[iFp] = STATES[iFp] + RATES[iFp] * dt;
-  STATES[iSp] = STATES[iSp] + RATES[iSp] * dt;
-  STATES[d] = STATES[d] + RATES[d] * dt;
-  STATES[ff] = STATES[ff] + RATES[ff] * dt;
-  STATES[fs] = STATES[fs] + RATES[fs] * dt;
-  STATES[fcaf] = STATES[fcaf] + RATES[fcaf] * dt;
-  STATES[fcas] = STATES[fcas] + RATES[fcas] * dt;
-  STATES[jca] = STATES[jca] + RATES[jca] * dt;
-  STATES[ffp] = STATES[ffp] + RATES[ffp] * dt;
-  STATES[fcafp] = STATES[fcafp] + RATES[fcafp] * dt;
-  STATES[nca] = STATES[nca] + RATES[nca] * dt;
-  STATES[xrf] = STATES[xrf] + RATES[xrf] * dt;
-  STATES[xrs] = STATES[xrs] + RATES[xrs] * dt;
-  STATES[xs1] = STATES[xs1] + RATES[xs1] * dt;
-  STATES[xs2] = STATES[xs2] + RATES[xs2] * dt;
-  STATES[xk1] = STATES[xk1] + RATES[xk1] * dt;
-  STATES[Jrelnp] = STATES[Jrelnp] + RATES[Jrelnp] * dt;
-  STATES[Jrelp] = STATES[Jrelp] + RATES[Jrelp] * dt;
-#else
-////==============
-////Exact solution
-////==============
-////INa
-  STATES[m] = ALGEBRAIC[mss] - (ALGEBRAIC[mss] - STATES[m]) * exp(-dt / ALGEBRAIC[tm]);
-  STATES[hf] = ALGEBRAIC[hss] - (ALGEBRAIC[hss] - STATES[hf]) * exp(-dt / ALGEBRAIC[thf]);
-  STATES[hs] = ALGEBRAIC[hss] - (ALGEBRAIC[hss] - STATES[hs]) * exp(-dt / ALGEBRAIC[ths]);
-  STATES[j] = ALGEBRAIC[jss] - (ALGEBRAIC[jss] - STATES[j]) * exp(-dt / ALGEBRAIC[tj]);
-  STATES[hsp] = ALGEBRAIC[hssp] - (ALGEBRAIC[hssp] - STATES[hsp]) * exp(-dt / ALGEBRAIC[thsp]);
-  STATES[jp] = ALGEBRAIC[jss] - (ALGEBRAIC[jss] - STATES[jp]) * exp(-dt / ALGEBRAIC[tjp]);
-  STATES[mL] = ALGEBRAIC[mLss] - (ALGEBRAIC[mLss] - STATES[mL]) * exp(-dt / ALGEBRAIC[tmL]);
-  STATES[hL] = ALGEBRAIC[hLss] - (ALGEBRAIC[hLss] - STATES[hL]) * exp(-dt / CONSTANTS[thL]);
-  STATES[hLp] = ALGEBRAIC[hLssp] - (ALGEBRAIC[hLssp] - STATES[hLp]) * exp(-dt / CONSTANTS[thLp]);
-////Ito
-  STATES[a] = ALGEBRAIC[ass] - (ALGEBRAIC[ass] - STATES[a]) * exp(-dt / ALGEBRAIC[ta]);
-  STATES[iF] = ALGEBRAIC[iss] - (ALGEBRAIC[iss] - STATES[iF]) * exp(-dt / ALGEBRAIC[tiF]);
-  STATES[iS] = ALGEBRAIC[iss] - (ALGEBRAIC[iss] - STATES[iS]) * exp(-dt / ALGEBRAIC[tiS]);
-  STATES[ap] = ALGEBRAIC[assp] - (ALGEBRAIC[assp] - STATES[ap]) * exp(-dt / ALGEBRAIC[ta]);
-  STATES[iFp] = ALGEBRAIC[iss] - (ALGEBRAIC[iss] - STATES[iFp]) * exp(-dt / ALGEBRAIC[tiFp]);
-  STATES[iSp] = ALGEBRAIC[iss] - (ALGEBRAIC[iss] - STATES[iSp]) * exp(-dt / ALGEBRAIC[tiSp]);
-////ICaL
-  STATES[d] = ALGEBRAIC[dss] - (ALGEBRAIC[dss] - STATES[d]) * exp(-dt / ALGEBRAIC[td]);
-  STATES[ff] = ALGEBRAIC[fss] - (ALGEBRAIC[fss] - STATES[ff]) * exp(-dt / ALGEBRAIC[tff]);
-  STATES[fs] = ALGEBRAIC[fss] - (ALGEBRAIC[fss] - STATES[fs]) * exp(-dt / ALGEBRAIC[tfs]);
-  STATES[fcaf] = ALGEBRAIC[fcass] - (ALGEBRAIC[fcass] - STATES[fcaf]) * exp(-dt / ALGEBRAIC[tfcaf]);
-  STATES[fcas] = ALGEBRAIC[fcass] - (ALGEBRAIC[fcass] - STATES[fcas]) * exp(-dt / ALGEBRAIC[tfcas]);
-  STATES[jca] = ALGEBRAIC[fcass] - (ALGEBRAIC[fcass] - STATES[jca]) * exp(- dt / CONSTANTS[tjca]);
-  STATES[ffp] = ALGEBRAIC[fss] - (ALGEBRAIC[fss] - STATES[ffp]) * exp(-dt / ALGEBRAIC[tffp]);
-  STATES[fcafp] = ALGEBRAIC[fcass] - (ALGEBRAIC[fcass] - STATES[fcafp]) * exp(-d / ALGEBRAIC[tfcafp]);
-  STATES[nca] = ALGEBRAIC[anca] * CONSTANTS[k2n] / ALGEBRAIC[km2n] -
-      (ALGEBRAIC[anca] * CONSTANTS[k2n] / ALGEBRAIC[km2n] - STATES[nca]) * exp(-ALGEBRAIC[km2n] * dt);
-////IKr
-  STATES[xrf] = ALGEBRAIC[xrss] - (ALGEBRAIC[xrss] - STATES[xrf]) * exp(-dt / ALGEBRAIC[txrf]);
-  STATES[xrs] = ALGEBRAIC[xrss] - (ALGEBRAIC[xrss] - STATES[xrs]) * exp(-dt / ALGEBRAIC[txrs]);
-////IKs
-  STATES[xs1] = ALGEBRAIC[xs1ss] - (ALGEBRAIC[xs1ss] - STATES[xs1]) * exp(-dt / ALGEBRAIC[txs1]);
-  STATES[xs2] = ALGEBRAIC[xs2ss] - (ALGEBRAIC[xs2ss] - STATES[xs2]) * exp(-dt / ALGEBRAIC[txs2]);
-////IK1
-  STATES[xk1] = ALGEBRAIC[xk1ss] - (ALGEBRAIC[xk1ss] - STATES[xk1]) * exp(-dt / ALGEBRAIC[txk1]);
-////RyR receptors
-  STATES[Jrelnp] = ALGEBRAIC[Jrel_inf] - (ALGEBRAIC[Jrel_inf] - STATES[Jrelnp]) * exp(-dt / ALGEBRAIC[tau_rel]);
-  STATES[Jrelp] = ALGEBRAIC[Jrel_infp] - (ALGEBRAIC[Jrel_infp] - STATES[Jrelp]) * exp(-dt / ALGEBRAIC[tau_relp]);
-////=============================
-////Approximated solution (Euler)
-////=============================
-////CaMK
-  STATES[CaMKt] = STATES[CaMKt] + RATES[CaMKt] * dt;
-////Membrane potential
-  STATES[v] = STATES[v] + RATES[v] * dt;
-////Ion Concentrations and Buffers
-  STATES[nai] = STATES[nai] + RATES[nai] * dt;
-  STATES[nass] = STATES[nass] + RATES[nass] * dt;
-  STATES[ki] = STATES[ki] + RATES[ki] * dt;
-  STATES[kss] = STATES[kss] + RATES[kss] * dt;
-  // STATES[cai] = STATES[cai] + RATES[cai] * dt;
-  STATES[cai] = Ca_TRPN;
-  STATES[cass] = STATES[cass] + RATES[cass] * dt;
-  STATES[cansr] = STATES[cansr] + RATES[cansr] * dt;
-  STATES[cajsr] = STATES[cajsr] + RATES[cajsr] * dt;
-#endif
-}
+// void Ohara_Rudy_2011::solveAnalytical(double dt, double Ca_TRPN)
+// {
+// #ifdef EULER
+//   STATES[v] = STATES[v] + RATES[v] * dt;
+//   STATES[CaMKt] = STATES[CaMKt] + RATES[CaMKt] * dt;
+//   STATES[cass] = STATES[cass] + RATES[cass] * dt;
+//   STATES[nai] = STATES[nai] + RATES[nai] * dt;
+//   STATES[nass] = STATES[nass] + RATES[nass] * dt;
+//   STATES[ki] = STATES[ki] + RATES[ki] * dt;
+//   STATES[kss] = STATES[kss] + RATES[kss] * dt;
+//   STATES[cansr] = STATES[cansr] + RATES[cansr] * dt;
+//   STATES[cajsr] = STATES[cajsr] + RATES[cajsr] * dt;
+//   STATES[cai] = STATES[cai] + RATES[cai] * dt;
+//   STATES[m] = STATES[m] + RATES[m] * dt;
+//   STATES[hf] = STATES[hf] + RATES[hf] * dt;
+//   STATES[hs] = STATES[hs] + RATES[hs] * dt;
+//   STATES[j] = STATES[j] + RATES[j] * dt;
+//   STATES[hsp] = STATES[hsp] + RATES[hsp] * dt;
+//   STATES[jp] = STATES[jp] + RATES[jp] * dt;
+//   STATES[mL] = STATES[mL] + RATES[mL] * dt;
+//   STATES[hL] = STATES[hL] + RATES[hL] * dt;
+//   STATES[hLp] = STATES[hLp] + RATES[hLp] * dt;
+//   STATES[a] = STATES[a] + RATES[a] * dt;
+//   STATES[iF] = STATES[iF] + RATES[iF] * dt;
+//   STATES[iS] = STATES[iS] + RATES[iS] * dt;
+//   STATES[ap] = STATES[ap] + RATES[ap] * dt;
+//   STATES[iFp] = STATES[iFp] + RATES[iFp] * dt;
+//   STATES[iSp] = STATES[iSp] + RATES[iSp] * dt;
+//   STATES[d] = STATES[d] + RATES[d] * dt;
+//   STATES[ff] = STATES[ff] + RATES[ff] * dt;
+//   STATES[fs] = STATES[fs] + RATES[fs] * dt;
+//   STATES[fcaf] = STATES[fcaf] + RATES[fcaf] * dt;
+//   STATES[fcas] = STATES[fcas] + RATES[fcas] * dt;
+//   STATES[jca] = STATES[jca] + RATES[jca] * dt;
+//   STATES[ffp] = STATES[ffp] + RATES[ffp] * dt;
+//   STATES[fcafp] = STATES[fcafp] + RATES[fcafp] * dt;
+//   STATES[nca] = STATES[nca] + RATES[nca] * dt;
+//   STATES[xrf] = STATES[xrf] + RATES[xrf] * dt;
+//   STATES[xrs] = STATES[xrs] + RATES[xrs] * dt;
+//   STATES[xs1] = STATES[xs1] + RATES[xs1] * dt;
+//   STATES[xs2] = STATES[xs2] + RATES[xs2] * dt;
+//   STATES[xk1] = STATES[xk1] + RATES[xk1] * dt;
+//   STATES[Jrelnp] = STATES[Jrelnp] + RATES[Jrelnp] * dt;
+//   STATES[Jrelp] = STATES[Jrelp] + RATES[Jrelp] * dt;
+// #else
+// ////==============
+// ////Exact solution
+// ////==============
+// ////INa
+//   STATES[m] = ALGEBRAIC[mss] - (ALGEBRAIC[mss] - STATES[m]) * exp(-dt / ALGEBRAIC[tm]);
+//   STATES[hf] = ALGEBRAIC[hss] - (ALGEBRAIC[hss] - STATES[hf]) * exp(-dt / ALGEBRAIC[thf]);
+//   STATES[hs] = ALGEBRAIC[hss] - (ALGEBRAIC[hss] - STATES[hs]) * exp(-dt / ALGEBRAIC[ths]);
+//   STATES[j] = ALGEBRAIC[jss] - (ALGEBRAIC[jss] - STATES[j]) * exp(-dt / ALGEBRAIC[tj]);
+//   STATES[hsp] = ALGEBRAIC[hssp] - (ALGEBRAIC[hssp] - STATES[hsp]) * exp(-dt / ALGEBRAIC[thsp]);
+//   STATES[jp] = ALGEBRAIC[jss] - (ALGEBRAIC[jss] - STATES[jp]) * exp(-dt / ALGEBRAIC[tjp]);
+//   STATES[mL] = ALGEBRAIC[mLss] - (ALGEBRAIC[mLss] - STATES[mL]) * exp(-dt / ALGEBRAIC[tmL]);
+//   STATES[hL] = ALGEBRAIC[hLss] - (ALGEBRAIC[hLss] - STATES[hL]) * exp(-dt / CONSTANTS[thL]);
+//   STATES[hLp] = ALGEBRAIC[hLssp] - (ALGEBRAIC[hLssp] - STATES[hLp]) * exp(-dt / CONSTANTS[thLp]);
+// ////Ito
+//   STATES[a] = ALGEBRAIC[ass] - (ALGEBRAIC[ass] - STATES[a]) * exp(-dt / ALGEBRAIC[ta]);
+//   STATES[iF] = ALGEBRAIC[iss] - (ALGEBRAIC[iss] - STATES[iF]) * exp(-dt / ALGEBRAIC[tiF]);
+//   STATES[iS] = ALGEBRAIC[iss] - (ALGEBRAIC[iss] - STATES[iS]) * exp(-dt / ALGEBRAIC[tiS]);
+//   STATES[ap] = ALGEBRAIC[assp] - (ALGEBRAIC[assp] - STATES[ap]) * exp(-dt / ALGEBRAIC[ta]);
+//   STATES[iFp] = ALGEBRAIC[iss] - (ALGEBRAIC[iss] - STATES[iFp]) * exp(-dt / ALGEBRAIC[tiFp]);
+//   STATES[iSp] = ALGEBRAIC[iss] - (ALGEBRAIC[iss] - STATES[iSp]) * exp(-dt / ALGEBRAIC[tiSp]);
+// ////ICaL
+//   STATES[d] = ALGEBRAIC[dss] - (ALGEBRAIC[dss] - STATES[d]) * exp(-dt / ALGEBRAIC[td]);
+//   STATES[ff] = ALGEBRAIC[fss] - (ALGEBRAIC[fss] - STATES[ff]) * exp(-dt / ALGEBRAIC[tff]);
+//   STATES[fs] = ALGEBRAIC[fss] - (ALGEBRAIC[fss] - STATES[fs]) * exp(-dt / ALGEBRAIC[tfs]);
+//   STATES[fcaf] = ALGEBRAIC[fcass] - (ALGEBRAIC[fcass] - STATES[fcaf]) * exp(-dt / ALGEBRAIC[tfcaf]);
+//   STATES[fcas] = ALGEBRAIC[fcass] - (ALGEBRAIC[fcass] - STATES[fcas]) * exp(-dt / ALGEBRAIC[tfcas]);
+//   STATES[jca] = ALGEBRAIC[fcass] - (ALGEBRAIC[fcass] - STATES[jca]) * exp(- dt / CONSTANTS[tjca]);
+//   STATES[ffp] = ALGEBRAIC[fss] - (ALGEBRAIC[fss] - STATES[ffp]) * exp(-dt / ALGEBRAIC[tffp]);
+//   STATES[fcafp] = ALGEBRAIC[fcass] - (ALGEBRAIC[fcass] - STATES[fcafp]) * exp(-d / ALGEBRAIC[tfcafp]);
+//   STATES[nca] = ALGEBRAIC[anca] * CONSTANTS[k2n] / ALGEBRAIC[km2n] -
+//       (ALGEBRAIC[anca] * CONSTANTS[k2n] / ALGEBRAIC[km2n] - STATES[nca]) * exp(-ALGEBRAIC[km2n] * dt);
+// ////IKr
+//   STATES[xrf] = ALGEBRAIC[xrss] - (ALGEBRAIC[xrss] - STATES[xrf]) * exp(-dt / ALGEBRAIC[txrf]);
+//   STATES[xrs] = ALGEBRAIC[xrss] - (ALGEBRAIC[xrss] - STATES[xrs]) * exp(-dt / ALGEBRAIC[txrs]);
+// ////IKs
+//   STATES[xs1] = ALGEBRAIC[xs1ss] - (ALGEBRAIC[xs1ss] - STATES[xs1]) * exp(-dt / ALGEBRAIC[txs1]);
+//   STATES[xs2] = ALGEBRAIC[xs2ss] - (ALGEBRAIC[xs2ss] - STATES[xs2]) * exp(-dt / ALGEBRAIC[txs2]);
+// ////IK1
+//   STATES[xk1] = ALGEBRAIC[xk1ss] - (ALGEBRAIC[xk1ss] - STATES[xk1]) * exp(-dt / ALGEBRAIC[txk1]);
+// ////RyR receptors
+//   STATES[Jrelnp] = ALGEBRAIC[Jrel_inf] - (ALGEBRAIC[Jrel_inf] - STATES[Jrelnp]) * exp(-dt / ALGEBRAIC[tau_rel]);
+//   STATES[Jrelp] = ALGEBRAIC[Jrel_infp] - (ALGEBRAIC[Jrel_infp] - STATES[Jrelp]) * exp(-dt / ALGEBRAIC[tau_relp]);
+// ////=============================
+// ////Approximated solution (Euler)
+// ////=============================
+// ////CaMK
+//   STATES[CaMKt] = STATES[CaMKt] + RATES[CaMKt] * dt;
+// ////Membrane potential
+//   STATES[v] = STATES[v] + RATES[v] * dt;
+// ////Ion Concentrations and Buffers
+//   STATES[nai] = STATES[nai] + RATES[nai] * dt;
+//   STATES[nass] = STATES[nass] + RATES[nass] * dt;
+//   STATES[ki] = STATES[ki] + RATES[ki] * dt;
+//   STATES[kss] = STATES[kss] + RATES[kss] * dt;
+//   // STATES[cai] = STATES[cai] + RATES[cai] * dt;
+//   STATES[cai] = Ca_TRPN;
+//   STATES[cass] = STATES[cass] + RATES[cass] * dt;
+//   STATES[cansr] = STATES[cansr] + RATES[cansr] * dt;
+//   STATES[cajsr] = STATES[cajsr] + RATES[cajsr] * dt;
+// #endif
+// }
 
 double Ohara_Rudy_2011::set_time_step(double TIME,
   double time_point,
