@@ -20,8 +20,8 @@ clock_t tic()
 void toc(clock_t start = START_TIMER)
 {
   std::cout
-      // << "Elapsed time: "
-      // << (clock() - start) / (double)CLOCKS_PER_SEC << "s"
+      << "Elapsed time: "
+      << (clock() - start) / (double)CLOCKS_PER_SEC << "s"
       << std::endl;
 }
 
@@ -114,16 +114,20 @@ int main(int argc, char **argv)
   dt = 0.001;
   // dt = 1.;
   tnext = tcurr+dt;
+  // printf("%lf,%lf\n", tcurr,contr_cell->RATES[TRPN]);
   
-  tic();
+  
   printf("Analytical method\n");
   double tmax = pace_max*bcl;
   // double tmax = 281.;
   double max_time_step = 1.0;
   double time_point = 25.0;
   double dt_set;
+  
+  tic();
 
-  while (tcurr<tmax){
+  while (tcurr<tmax)
+  {
     cai_index = tcurr;
        // compute ODE at tcurr
     chem_cell->computeRates(tcurr,
@@ -131,7 +135,7 @@ int main(int argc, char **argv)
             		 chem_cell->RATES,
 		             chem_cell->STATES,
             		 chem_cell->ALGEBRAIC,
-                 contr_cell->STATES[TRPN]
+                 contr_cell->RATES[TRPN]
                  );
 
     contr_cell->computeRates(tcurr,
@@ -162,7 +166,7 @@ int main(int argc, char **argv)
 
     if(tcurr==0.0){
       chem_cell->solveAnalytical(dt);
-      contr_cell->solveEuler(dt, tcurr, Cai_input[cai_index]);
+      contr_cell->solveEuler(dt, tcurr,Cai_input[cai_index]);
     }
     else{
       chem_cell->solveAnalytical(dt);
@@ -171,15 +175,15 @@ int main(int argc, char **argv)
 
     // contr_cell->solveEuler(dt, tcurr, Cai_input[cai_index]);
     // chem_cell->solveAnalytical(dt, Cai_input[cai_index]);
-    //  chem_cell->solveAnalytical(dt);
+    // chem_cell->solveAnalytical(dt);
 
-    // printf("%lf,%lf\n", tcurr,contr_cell->STATES[TRPN]);
-    printf("%lf,%lf\n", tcurr,chem_cell->STATES[v]);
+    // printf("%lf,%lf\n", tcurr,contr_cell->ALGEBRAIC[ca50]);
+    printf("%lf,%lf,%lf\n", tcurr, chem_cell->STATES[v], chem_cell->STATES[cai]);
 
   tcurr += dt;
-}
+  }
 
-toc();
+  toc();
 
 // delete contr_cell;
 // delete chem_cell;

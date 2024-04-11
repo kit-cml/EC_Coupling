@@ -37,7 +37,7 @@ void Land_2016::initConsts(bool is_skinned, bool BETA, double *y)
 {
     // user input
     CONSTANTS[dlambda_dt] = 0; 
-    CONSTANTS[lambda] = 1;
+    CONSTANTS[lambda] = 1.0;
     CONSTANTS[Cai] = 0.0;
     // if (t == -1) {
         RATES[XS] = 0;
@@ -180,7 +180,7 @@ RATES[XW] = ALGEBRAIC[xb_uw] - ALGEBRAIC[xb_wu] - ALGEBRAIC[xb_ws] - ALGEBRAIC[x
 
 // ca50 = ca50 + beta_1*min(0.2,lambda - 1);
 // dydt(3)  = koff * ( (Cai/ca50)^TRPN_n * (1-TRPN) - TRPN);
-ALGEBRAIC[ca50] = ALGEBRAIC[ca50] + ALGEBRAIC[beta_1] * fmin(0.2, CONSTANTS[lambda] - 1);
+ALGEBRAIC[ca50] = ALGEBRAIC[ca50] + CONSTANTS[beta_1] * fmin(0.2, CONSTANTS[lambda] - 1);
 RATES[TRPN] = CONSTANTS[koff] * (pow((CONSTANTS[Cai] / ALGEBRAIC[ca50]), CONSTANTS[TRPN_n]) * (1 - STATES[TRPN]) - STATES[TRPN]);
 
 // XSSS = dr * 0.5;
