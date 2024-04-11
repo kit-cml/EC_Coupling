@@ -164,14 +164,14 @@ int main(int argc, char **argv)
       qnet = 0.;
     }
 
-    if(tcurr==0.0){
-      chem_cell->solveAnalytical(dt);
-      contr_cell->solveEuler(dt, tcurr,Cai_input[cai_index]);
-    }
-    else{
+    // if(tcurr==0.0){
+    //   chem_cell->solveAnalytical(dt);
+    //   contr_cell->solveEuler(dt, tcurr,Cai_input[cai_index]);
+    // }
+    // else{
       chem_cell->solveAnalytical(dt);
       contr_cell->solveEuler(dt, tcurr, chem_cell->STATES[cai]);
-    }
+    // }
 
     // contr_cell->solveEuler(dt, tcurr, Cai_input[cai_index]);
     // chem_cell->solveAnalytical(dt, Cai_input[cai_index]);
