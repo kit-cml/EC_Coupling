@@ -249,7 +249,7 @@ int main(int argc, char **argv)
     //Compute the analytical solution
 #else
     p_cell->solveAnalytical(dt);
-    printf("%lf,%lf\n", tcurr,p_cell->STATES[v]);
+    // printf("%lf,%lf\n", tcurr,p_cell->STATES[v]);
     //p_cell->solveRK4(tcurr, dt);
 #endif
     // if(p_cell->STATES[v] > -88.0){

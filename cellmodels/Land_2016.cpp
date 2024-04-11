@@ -257,7 +257,7 @@ void Land_2016::solveEuler(double dt, double t, double Cai_input)
     STATES[ZETAS] = STATES[ZETAS] + RATES[ZETAS] * dt;
     STATES[ZETAW] = STATES[ZETAW] + RATES[ZETAW] * dt;
     STATES[dCd_dt] = STATES[dCd_dt] + RATES[dCd_dt] * dt;
-    // printf("Lfac: %f Ta: %f Tp: %f\n",  ALGEBRAIC[Lfac], ALGEBRAIC[Ta] , ALGEBRAIC[Tp]);
+    printf("Lfac: %f Ta: %f Tp: %f\n",  ALGEBRAIC[Lfac], ALGEBRAIC[Ta] , ALGEBRAIC[Tp]);
     // karena Lfac 0, jadi Ta nya 0
     // printf("rates: %f %f %f\n",  RATES[XS] , RATES[XW], RATES[TRPN] );
 }

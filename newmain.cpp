@@ -172,13 +172,8 @@ int main(int argc, char **argv)
       chem_cell->solveAnalytical(dt);
       contr_cell->solveEuler(dt, tcurr, chem_cell->STATES[cai]);
     // }
-
-    // contr_cell->solveEuler(dt, tcurr, Cai_input[cai_index]);
-    // chem_cell->solveAnalytical(dt, Cai_input[cai_index]);
-    // chem_cell->solveAnalytical(dt);
-
-    // printf("%lf,%lf\n", tcurr,contr_cell->ALGEBRAIC[ca50]);
-    printf("%lf,%lf,%lf\n", tcurr, chem_cell->STATES[v], chem_cell->STATES[cai]);
+    
+    printf("%lf,%lf,%lf,%lf,%lf\n", tcurr, chem_cell->STATES[v], chem_cell->STATES[cai], contr_cell->ALGEBRAIC[land_T], contr_cell->ALGEBRAIC[land_T]*480*0.5652016963361872);
 
   tcurr += dt;
   }
