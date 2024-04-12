@@ -114,6 +114,7 @@ int main(int argc, char **argv)
   dt = 0.001;
   // dt = 1.;
   tnext = tcurr+dt;
+  double cai_temp;
   // printf("%lf,%lf\n", tcurr,contr_cell->RATES[TRPN]);
   
   
@@ -152,6 +153,7 @@ int main(int argc, char **argv)
                chem_cell->RATES,
                chem_cell->STATES,
                chem_cell->ALGEBRAIC);
+    // dt_set = dt;
 
     // compute accepted timestep
     if (floor((tcurr + dt_set) / bcl) == floor(tcurr / bcl)) {
@@ -165,16 +167,17 @@ int main(int argc, char **argv)
     }
 
     // if(tcurr==0.0){
-    //   chem_cell->solveAnalytical(dt);
-    //   contr_cell->solveEuler(dt, tcurr,Cai_input[cai_index]);
+      // chem_cell->solveAnalytical(dt);
+      // contr_cell->solveEuler(dt, tcurr,Cai_input[cai_index]);
     // }
     // else{
       chem_cell->solveAnalytical(dt);
-      contr_cell->solveEuler(dt, tcurr, chem_cell->STATES[cai]);
+      cai_temp = chem_cell->STATES[cai]*1000.;
+      contr_cell->solveEuler(dt, tcurr, (cai_temp));
     // }
     
-    printf("%lf,%lf,%lf,%lf,%lf\n", tcurr, chem_cell->STATES[v], chem_cell->STATES[cai], contr_cell->ALGEBRAIC[land_T], contr_cell->ALGEBRAIC[land_T]*480*0.5652016963361872);
-
+    // printf("%lf,%lf,%lf,%lf,%lf\n", tcurr, chem_cell->STATES[v], chem_cell->STATES[cai], contr_cell->ALGEBRAIC[land_T], contr_cell->ALGEBRAIC[land_T]*480*0.5652016963361872);
+    // printf("%lf,%lf,%lf\n", tcurr,chem_cell->STATES[cai]*1000,Cai_input[cai_index]);
   tcurr += dt;
   }
 
