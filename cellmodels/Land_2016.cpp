@@ -240,7 +240,7 @@ ALGEBRAIC[Tp] = CONSTANTS[land_a] * (ALGEBRAIC[F1] + ALGEBRAIC[Fd]);
 
 // Ta = Lfac * (Tref/dr) * ( (ZETAS+1) * XS + (ZETAW) * XW );
 // T = Ta + Tp;
-ALGEBRAIC[Ta] = ALGEBRAIC[Lfac] * (CONSTANTS[Tref] / CONSTANTS[dr]) * ((STATES[ZETAS] + 1) * STATES[XS] + (STATES[ZETAW])*STATES[XW]);
+ALGEBRAIC[Ta] = ALGEBRAIC[Lfac] * (CONSTANTS[Tref] / CONSTANTS[dr]) * ( (STATES[ZETAS] + 1) * STATES[XS] + (STATES[ZETAW]) * STATES[XW]);
 ALGEBRAIC[land_T] = ALGEBRAIC[Ta] + ALGEBRAIC[Tp];
 
 }
@@ -249,7 +249,7 @@ void Land_2016::solveEuler(double dt, double t, double Cai_input)
 {
 
     CONSTANTS[Cai] = Cai_input;
-    // printf("%lf,%lf\n", t,ALGEBRAIC[land_T]);
+    // printf("%lf,%lf\n", t, Cai_input);
     STATES[XS] = STATES[XS] + RATES[XS] * dt;
     STATES[XW] = STATES[XW] + RATES[XW] * dt;
     STATES[TRPN] = STATES[TRPN] + RATES[TRPN] * dt;
