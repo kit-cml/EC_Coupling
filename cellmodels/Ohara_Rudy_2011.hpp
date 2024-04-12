@@ -10,6 +10,9 @@ public:
   Ohara_Rudy_2011();
   ~Ohara_Rudy_2011();
   void initConsts ();
+  void initConsts(double type);
+	void initConsts(bool is_dutta);
+	void initConsts(double type, double conc, double *ic50, bool is_dutta );
   void computeRates();
   void computeRates(double TIME, double *CONSTANTS, double *RATES, double *STATES, double *ALGEBRAIC, double land_trpn);
   // void solveAnalytical();
@@ -17,6 +20,11 @@ public:
   // void solveAnalytical( double dt, double Ca_TRPN );
   static double set_time_step(double TIME,double time_point,double max_time_step,
       double* CONSTANTS,double* RATES,double* STATES,double* ALGEBRAIC);
+
+private:
+	void ___applyDrugEffect(double conc, double *ic50);
+	void ___applyDutta();
+	void ___initConsts(double type);
 
 };
 

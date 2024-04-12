@@ -450,20 +450,10 @@ delete []RATES;
 delete []STATES;
 }
 
-// void Ohara_Rudy_2011::initConsts()
-// {
-
-// }
-
 void Ohara_Rudy_2011::computeRates()
 {
 
 }
-
-// void Ohara_Rudy_2011::solveAnalytical()
-// {
-
-// }
 
 void Ohara_Rudy_2011::initConsts()
 {
@@ -1004,6 +994,42 @@ void Ohara_Rudy_2011::solveAnalytical(double dt)
   //new
   STATES[ca_trpn] = STATES[ca_trpn] + RATES[ca_trpn] * dt;
 #endif
+}
+
+void Ohara_Rudy_2011::___applyDutta()
+{
+CONSTANTS[GKs] *= 1.870;
+CONSTANTS[GKr] *= 1.013;
+CONSTANTS[GK1] *= 1.698;
+CONSTANTS[PCa] *= 1.007;
+CONSTANTS[GNaL] *= 2.661;
+}
+
+void Ohara_Rudy_2011::___applyDrugEffect(double conc, double *ic50)
+{
+CONSTANTS[GK1] = CONSTANTS[GK1] * ((ic50[2] > 10E-14 && ic50[3] > 10E-14) ? 1./(1.+pow(conc/ic50[2],ic50[3])) : 1.);
+CONSTANTS[GKr] = CONSTANTS[GKr] * ((ic50[12] > 10E-14 && ic50[13] > 10E-14) ? 1./(1.+pow(conc/ic50[12],ic50[13])) : 1.);
+CONSTANTS[GKs] = CONSTANTS[GKs] * ((ic50[4] > 10E-14 && ic50[5] > 10E-14) ? 1./(1.+pow(conc/ic50[4],ic50[5])) : 1.);
+CONSTANTS[GNaL] = CONSTANTS[GNaL] * ((ic50[8] > 10E-14 && ic50[9] > 10E-14) ? 1./(1.+pow(conc/ic50[8],ic50[9])) : 1.);
+CONSTANTS[GNa] = CONSTANTS[GNa] * ((ic50[6] > 10E-14 && ic50[7] > 10E-14) ? 1./(1.+pow(conc/ic50[6],ic50[7])) : 1.);
+CONSTANTS[Gto] = CONSTANTS[Gto] * ((ic50[10] > 10E-14 && ic50[11] > 10E-14) ? 1./(1.+pow(conc/ic50[10],ic50[11])) : 1.);
+CONSTANTS[PCa] = CONSTANTS[PCa] * ( (ic50[0] > 10E-14 && ic50[1] > 10E-14) ? 1./(1.+pow(conc/ic50[0],ic50[1])) : 1.);
+}
+
+void Ohara_Rudy_2011::initConsts()
+{
+	___initConsts(0.);
+}
+
+void Ohara_Rudy_2011::initConsts(double type)
+{
+	___initConsts(type);
+}
+
+void Ohara_Rudy_2011::initConsts(double type, double conc, double *ic50, bool is_dutta)
+{
+	___initConsts(type);
+	___applyDutta();
 }
 
 // void Ohara_Rudy_2011::solveAnalytical(double dt, double Ca_TRPN)

@@ -25,37 +25,68 @@ void toc(clock_t start = START_TIMER)
       << std::endl;
 }
 
-int get_cai_data_from_file(const char* file_name, double *cai)
-{
-  //put them in as array of double
-  FILE *fp_cai;
+// int get_cai_data_from_file(const char* file_name, double *cai)
+// {
+//   //put them in as array of double
+//   FILE *fp_cai;
   
-  char *token, buffer[255];
-  unsigned short idx;
+//   char *token, buffer[255];
+//   unsigned short idx;
 
-  if( (fp_cai = fopen(file_name, "r")) == NULL){
-    printf("Cannot open file %s\n",
-      file_name);
-    return 0;
+//   if( (fp_cai = fopen(file_name, "r")) == NULL){
+//     printf("Cannot open file %s\n",
+//       file_name);
+//     return 0;
+//   }
+
+//   idx = 0;
+//   int sample_size = 0;
+
+//   fgets(buffer, sizeof(buffer), fp_cai); // skip header
+//   while( fgets(buffer, sizeof(buffer), fp_cai) != NULL )
+//   { // begin line reading
+//     token = strtok( buffer, "," );
+//     while( token != NULL )
+//     { // begin data tokenizing
+//       cai[idx++] = strtod(token, NULL);
+//       token = strtok(NULL, ",");
+//     } // end data tokenizing
+//      sample_size++;
+//   } // end line reading
+
+//   fclose(fp_cai);
+//   return sample_size;
+// }
+
+typedef struct row_data { double data[14]; } row_data;
+typedef std::vector< row_data > drug_t;
+
+int get_drug_data_from_file(const char *file_name, drug_t &vec)
+{
+  FILE *fp_drugs;
+  char *token, buffer[255];
+  row_data temp_array;
+  short idx;
+
+  if( (fp_drugs = fopen(file_name, "r")) == NULL){
+    printf("Cannot open file %s\n", file_name);
+    return 1;
   }
 
-  idx = 0;
-  int sample_size = 0;
-
-  fgets(buffer, sizeof(buffer), fp_cai); // skip header
-  while( fgets(buffer, sizeof(buffer), fp_cai) != NULL )
+  fgets(buffer, sizeof(buffer), fp_drugs); // skip header
+  while( fgets(buffer, sizeof(buffer), fp_drugs) != NULL )
   { // begin line reading
     token = strtok( buffer, "," );
+    idx = 0;
     while( token != NULL )
     { // begin data tokenizing
-      cai[idx++] = strtod(token, NULL);
+      temp_array.data[idx++] = strtod(token, NULL);
       token = strtok(NULL, ",");
     } // end data tokenizing
-     sample_size++;
+    vec.push_back(temp_array);
   } // end line reading
 
-  fclose(fp_cai);
-  return sample_size;
+  return 0;
 }
 
 int main(int argc, char **argv)
@@ -65,7 +96,9 @@ int main(int argc, char **argv)
   int cvode_retval;
   unsigned int icount, imax;
 
-  void* cvode_mem;
+  // drug initialisation
+  drug_t IC50;
+  double conc = 99.0;
 
   // cell object pointer
   Cellmodel* chem_cell; 
@@ -81,31 +114,32 @@ int main(int argc, char **argv)
 
   // variables for I/O
   char buffer[255];
-  FILE* fp_vm;
-  FILE* fp_icurr;
-  FILE* fp_conc;
-  FILE* fp_output;
-  FILE* fp_inet;
-  FILE* fp_qnet;
-  FILE* fp_timestep;
-  FILE* fp_ikr_gates;
+  // FILE* fp_vm;
+  // FILE* fp_icurr;
+  // FILE* fp_conc;
+  // FILE* fp_output;
+  // FILE* fp_inet;
+  // FILE* fp_qnet;
+  // FILE* fp_timestep;
+  // FILE* fp_ikr_gates;
 
-  int idx=0;
-  double temp_Cai_input[2000],Cai_input[1000];
+  // int idx=0;
+  // double temp_Cai_input[2000],Cai_input[1000];
   
-  int length = get_cai_data_from_file("./bin/cai_input.csv", temp_Cai_input);
-  for(int a = 1; a<2000; a = a+2){
-    Cai_input[idx] = temp_Cai_input[a];
-    idx++;
-}
-  int cai_index;
+//   int length = get_cai_data_from_file("./bin/cai_input.csv", temp_Cai_input);
+//   for(int a = 1; a<2000; a = a+2){
+//     Cai_input[idx] = temp_Cai_input[a];
+//     idx++;
+// }
+//   int cai_index;
 
-  printf("Using ORd x Land cell model\n");
+  // printf("Using ORd x Land cell model\n");
+  get_drug_data_from_file("IC50.csv",IC50);
   double y[7] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0};
   contr_cell = new Land_2016();
   chem_cell = new Ohara_Rudy_2011();
-  printf("Initialising\n");
-  chem_cell->initConsts();
+  // printf("Initialising\n");
+  chem_cell->initConsts(0., conc, IC50[0].data, true);
   contr_cell->initConsts(false, false, y);
 
   pace_max = 1;
@@ -117,7 +151,6 @@ int main(int argc, char **argv)
   // printf("%lf,%lf\n", tcurr,contr_cell->RATES[TRPN]);
   
   
-  printf("Analytical method\n");
   double tmax = pace_max*bcl;
   // double tmax = 281.;
   double max_time_step = 1.0;
@@ -125,10 +158,10 @@ int main(int argc, char **argv)
   double dt_set;
   
   tic();
-
+  printf("t,v,cai,tension,tension_scaled\n");
   while (tcurr<tmax)
   {
-    cai_index = tcurr;
+    // cai_index = tcurr;
        // compute ODE at tcurr
     chem_cell->computeRates(tcurr,
 		             chem_cell->CONSTANTS,
