@@ -455,9 +455,9 @@ void Ohara_Rudy_2011::computeRates()
 
 }
 
-void Ohara_Rudy_2011::initConsts()
+void Ohara_Rudy_2011::___initConsts(double type)
 {
-CONSTANTS[celltype] = 0;
+CONSTANTS[celltype] = type;
 CONSTANTS[nao] = 140;
 CONSTANTS[cao] = 1.8;
 CONSTANTS[ko] = 5.4;
