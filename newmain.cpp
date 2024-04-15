@@ -67,6 +67,7 @@ int get_drug_data_from_file(const char *file_name, drug_t &vec)
   char *token, buffer[255];
   row_data temp_array;
   short idx;
+  int sample_size=0;
 
   if( (fp_drugs = fopen(file_name, "r")) == NULL){
     printf("Cannot open file %s\n", file_name);
@@ -84,9 +85,10 @@ int get_drug_data_from_file(const char *file_name, drug_t &vec)
       token = strtok(NULL, ",");
     } // end data tokenizing
     vec.push_back(temp_array);
+    sample_size++;
   } // end line reading
 
-  return 0;
+  return sample_size;
 }
 
 int main(int argc, char **argv)
@@ -114,7 +116,9 @@ int main(int argc, char **argv)
 
   // variables for I/O
   char buffer[255];
-  // FILE* fp_vm;
+  char number[10];
+  
+  FILE* fp_vm;
   // FILE* fp_icurr;
   // FILE* fp_conc;
   // FILE* fp_output;
@@ -122,7 +126,7 @@ int main(int argc, char **argv)
   // FILE* fp_qnet;
   // FILE* fp_timestep;
   // FILE* fp_ikr_gates;
-
+ 
   // int idx=0;
   // double temp_Cai_input[2000],Cai_input[1000];
   
@@ -134,85 +138,103 @@ int main(int argc, char **argv)
 //   int cai_index;
 
   // printf("Using ORd x Land cell model\n");
-  get_drug_data_from_file("IC50.csv",IC50);
+  int sample_size;
+  sample_size = get_drug_data_from_file("bepridil.csv",IC50);
   double y[7] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0};
-  contr_cell = new Land_2016();
-  chem_cell = new Ohara_Rudy_2011();
-  // printf("Initialising\n");
-  chem_cell->initConsts(0., conc, IC50[0].data, true);
-  contr_cell->initConsts(false, false, y);
+  int sample_idx;
 
-  pace_max = 1;
-  bcl = 1000.;
-  tcurr = 0.0;
-  dt = 0.001;
+  
   // dt = 1.;
   tnext = tcurr+dt;
   // printf("%lf,%lf\n", tcurr,contr_cell->RATES[TRPN]);
   
-  
-  double tmax = pace_max*bcl;
+  double tmax;
   // double tmax = 281.;
   double max_time_step = 1.0;
   double time_point = 25.0;
   double dt_set;
-  
-  tic();
-  printf("t,v,cai,tension,tension_scaled\n");
-  while (tcurr<tmax)
-  {
-    // cai_index = tcurr;
-       // compute ODE at tcurr
-    chem_cell->computeRates(tcurr,
-		             chem_cell->CONSTANTS,
-            		 chem_cell->RATES,
-		             chem_cell->STATES,
-            		 chem_cell->ALGEBRAIC,
-                 contr_cell->RATES[TRPN]
-                 );
 
-    contr_cell->computeRates(tcurr,
-		             contr_cell->CONSTANTS,
-            		 contr_cell->RATES,
-		             contr_cell->STATES,
-            		 contr_cell->ALGEBRAIC,
-                 y);
+  //sample loop
+  for (sample_idx = 0; sample_idx<sample_size; sample_idx++ ){
+      char filename[100]= "./drugname/";
+      sprintf(number, "%d", sample_idx);
+      strcat(filename,number);
+      strcat(filename, ".csv");
+      contr_cell = new Land_2016();
+      chem_cell = new Ohara_Rudy_2011();
+      // printf("Initialising\n");
+      chem_cell->initConsts(0., conc, IC50[sample_idx].data, true);
+      contr_cell->initConsts(false, false, y);
+     
+      snprintf(buffer, sizeof(buffer), filename);
+      fp_vm = fopen(buffer, "w");
 
-    // dt_set = Ohara_Rudy_2011::set_time_step(tcurr,
-    //            time_point,
-    //            max_time_step,
-    //            chem_cell->CONSTANTS,
-    //            chem_cell->RATES,
-    //            chem_cell->STATES,
-    //            chem_cell->ALGEBRAIC);
-    // // dt_set = dt;
+      pace_max = 1;
+      bcl = 1000.;
+      tcurr = 0.0;
+      dt = 0.001;
+      tmax = pace_max*bcl;
+      
+      // tic();
+      fprintf(fp_vm,"t,v,cai,tension,tension_scaled\n");
+      while (tcurr<tmax)
+      {
+        // cai_index = tcurr;
+          // compute ODE at tcurr
+        chem_cell->computeRates(tcurr,
+                    chem_cell->CONSTANTS,
+                    chem_cell->RATES,
+                    chem_cell->STATES,
+                    chem_cell->ALGEBRAIC,
+                    contr_cell->RATES[TRPN]
+                    );
 
-    // // compute accepted timestep
-    // if (floor((tcurr + dt_set) / bcl) == floor(tcurr / bcl)) {
-    //   dt = dt_set;
-    // }
-    // else {
-    //   dt = (floor(tcurr / bcl) + 1) * bcl - tcurr;
-    //   inet = 0.;
-    //   if(floor(tcurr)==floor(bcl*pace_max)) //printf("Qnet final value: %lf\n", qnet/1000.0);
-    //   qnet = 0.;
-    // }
+        contr_cell->computeRates(tcurr,
+                    contr_cell->CONSTANTS,
+                    contr_cell->RATES,
+                    contr_cell->STATES,
+                    contr_cell->ALGEBRAIC,
+                    y);
 
-    // if(tcurr==0.0){
-      // chem_cell->solveAnalytical(dt);
-      // contr_cell->solveEuler(dt, tcurr,Cai_input[cai_index]);
-    // }
-    // else{
-      chem_cell->solveAnalytical(dt);
-      contr_cell->solveEuler(dt, tcurr, (chem_cell->STATES[cai]*1000.));
-    // }
-    
-    printf("%lf,%lf,%lf,%lf,%lf\n", tcurr, chem_cell->STATES[v], chem_cell->STATES[cai], contr_cell->ALGEBRAIC[land_T], contr_cell->ALGEBRAIC[land_T]*480*0.5652016963361872);
-    // printf("%lf,%lf,%lf\n", tcurr,chem_cell->STATES[cai]*1000,Cai_input[cai_index]);
-  tcurr += dt;
-  }
+        // dt_set = Ohara_Rudy_2011::set_time_step(tcurr,
+        //            time_point,
+        //            max_time_step,
+        //            chem_cell->CONSTANTS,
+        //            chem_cell->RATES,
+        //            chem_cell->STATES,
+        //            chem_cell->ALGEBRAIC);
+        // // dt_set = dt;
 
-  toc();
+        // // compute accepted timestep
+        // if (floor((tcurr + dt_set) / bcl) == floor(tcurr / bcl)) {
+        //   dt = dt_set;
+        // }
+        // else {
+        //   dt = (floor(tcurr / bcl) + 1) * bcl - tcurr;
+        //   inet = 0.;
+        //   if(floor(tcurr)==floor(bcl*pace_max)) //printf("Qnet final value: %lf\n", qnet/1000.0);
+        //   qnet = 0.;
+        // }
+
+        // if(tcurr==0.0){
+          // chem_cell->solveAnalytical(dt);
+          // contr_cell->solveEuler(dt, tcurr,Cai_input[cai_index]);
+        // }
+        // else{
+          chem_cell->solveAnalytical(dt);
+          contr_cell->solveEuler(dt, tcurr, (chem_cell->STATES[cai]*1000.));
+        // }
+        
+        fprintf(fp_vm, "%lf,%lf,%lf,%lf,%lf\n", tcurr, chem_cell->STATES[v], chem_cell->STATES[cai], contr_cell->ALGEBRAIC[land_T], contr_cell->ALGEBRAIC[land_T]*480*0.5652016963361872);
+        // printf("%lf,%lf,%lf\n", tcurr,chem_cell->STATES[cai]*1000,Cai_input[cai_index]);
+        tcurr += dt;
+      }
+
+  fclose(fp_vm);
+
+} //sample loop
+
+  // toc();
 
 // delete contr_cell;
 // delete chem_cell;
