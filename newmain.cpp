@@ -117,14 +117,15 @@ int main(int argc, char **argv)
   // variables for I/O
   char buffer[255];
   char number[10];
+  char vmcheck[100], icurr[100], concent[100], timestep[100];
   
   FILE* fp_vm;
-  // FILE* fp_icurr;
-  // FILE* fp_conc;
+  FILE* fp_icurr;
+  FILE* fp_conc;
   // FILE* fp_output;
   // FILE* fp_inet;
   // FILE* fp_qnet;
-  // FILE* fp_timestep;
+  FILE* fp_timestep;
   // FILE* fp_ikr_gates;
  
   // int idx=0;
@@ -155,19 +156,30 @@ int main(int argc, char **argv)
   double dt_set;
 
   //sample loop
+  tic();
   for (sample_idx = 0; sample_idx<sample_size; sample_idx++ ){
       char filename[100]= "./drugname/";
       sprintf(number, "%d", sample_idx);
       strcat(filename,number);
-      strcat(filename, ".csv");
+      strcpy(vmcheck,filename);strcpy(icurr,filename); strcpy(concent, filename); strcpy(timestep,filename);
+      strcat(vmcheck, "vmcheck.csv");strcat(icurr, "icurr.csv");strcat(concent, "conc.csv");strcat(timestep, "timestep.csv");
       contr_cell = new Land_2016();
       chem_cell = new Ohara_Rudy_2011();
       // printf("Initialising\n");
       chem_cell->initConsts(0., conc, IC50[sample_idx].data, true);
       contr_cell->initConsts(false, false, y);
      
-      snprintf(buffer, sizeof(buffer), filename);
+      snprintf(buffer, sizeof(buffer), vmcheck);
       fp_vm = fopen(buffer, "w");
+
+      snprintf(buffer, sizeof(buffer), icurr);
+      fp_icurr = fopen(buffer, "w");
+
+      snprintf(buffer, sizeof(buffer), concent);
+      fp_conc = fopen(buffer, "w");
+
+      snprintf(buffer, sizeof(buffer), timestep);
+      fp_timestep = fopen(buffer, "w");
 
       pace_max = 1;
       bcl = 1000.;
@@ -175,8 +187,11 @@ int main(int argc, char **argv)
       dt = 0.001;
       tmax = pace_max*bcl;
       
-      // tic();
-      fprintf(fp_vm,"t,v,cai,tension,tension_scaled\n");
+      
+      fprintf(fp_vm,"Time,v\n");
+      fprintf(fp_conc, "Time,nai,cai\n");
+      fprintf(fp_timestep, "Time,dt\n");
+      fprintf(fp_icurr, "Time,INa,IKr,IKs,IK1,Ito,ICaL\n");
       while (tcurr<tmax)
       {
         // cai_index = tcurr;
@@ -224,17 +239,27 @@ int main(int argc, char **argv)
           chem_cell->solveAnalytical(dt);
           contr_cell->solveEuler(dt, tcurr, (chem_cell->STATES[cai]*1000.));
         // }
-        
-        fprintf(fp_vm, "%lf,%lf,%lf,%lf,%lf\n", tcurr, chem_cell->STATES[v], chem_cell->STATES[cai], contr_cell->ALGEBRAIC[land_T], contr_cell->ALGEBRAIC[land_T]*480*0.5652016963361872);
+        fprintf(fp_vm,"Time,v\n");
+      fprintf(fp_conc, "Time,nai,cai\n");
+      fprintf(fp_timestep, "Time,dt\n");
+      fprintf(fp_icurr, "Time,INa,IKr,IKs,IK1,Ito,ICaL\n");
+        // fprintf(fp_vm, "%lf,%lf,%lf,%lf,%lf\n", tcurr, chem_cell->STATES[v], chem_cell->STATES[cai], contr_cell->ALGEBRAIC[land_T], contr_cell->ALGEBRAIC[land_T]*480*0.5652016963361872);
         // printf("%lf,%lf,%lf\n", tcurr,chem_cell->STATES[cai]*1000,Cai_input[cai_index]);
+
+        fprintf(fp_vm, "%lf,%lf\n", tcurr, chem_cell->STATES[v]);
+        fprintf(fp_conc,"%lf,%lf,%lf\n", tcurr,chem_cell->STATES[nai], chem_cell->STATES[cai] );
+        fprintf(fp_timestep, "%lf,%lf\n", tcurr,dt);
+        fprintf(fp_icurr,"%lf,%lf,%lf,%lf,%lf,%lf,%lf\n",tcurr,chem_cell->ALGEBRAIC[INa],chem_cell->ALGEBRAIC[IKr], chem_cell->ALGEBRAIC[IKs], chem_cell->ALGEBRAIC[IKs], chem_cell->ALGEBRAIC[IK1], chem_cell->ALGEBRAIC[Ito], chem_cell->ALGEBRAIC[ICaL]);
         tcurr += dt;
       }
 
   fclose(fp_vm);
-
+  fclose(fp_icurr);
+  fclose(fp_conc);
+  fclose(fp_timestep);
 } //sample loop
 
-  // toc();
+toc();
 
 // delete contr_cell;
 // delete chem_cell;
