@@ -158,7 +158,7 @@ int main(int argc, char **argv)
   //sample loop
   tic();
   for (sample_idx = 0; sample_idx<sample_size; sample_idx++ ){
-      char filename[100]= "./drugname/";
+      char filename[100]= "./bepridil/";
       sprintf(number, "%d", sample_idx);
       strcat(filename,number);
       strcpy(vmcheck,filename);strcpy(icurr,filename); strcpy(concent, filename); strcpy(timestep,filename);
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
       snprintf(buffer, sizeof(buffer), timestep);
       fp_timestep = fopen(buffer, "w");
 
-      pace_max = 1;
+      pace_max = 100;
       bcl = 1000.;
       tcurr = 0.0;
       dt = 0.001;

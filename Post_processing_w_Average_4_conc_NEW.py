@@ -397,9 +397,9 @@ def read_plt_files(folder_path, output_file_path):
     return result_apd, result_ca, result_dvmdt, result_qnet, result_vmpeak, result_qinward, drug, conc, smp
 
 if __name__ == "__main__":
-    folder_path = "D:/backup_CML_1/New_Drugs/Chantest_Endo/Testing"
+    folder_path = "./drugname"
     # read_plt_files(folder_path)
-    output_file_path = "D:/backup_CML_1/New_Drugs/Chantest_Endo/output_error_2.txt"
+    output_file_path = "./output_error_2.txt"
     read_plt_files(folder_path, output_file_path)
 
 result_apd_df = pd.DataFrame(result_apd, columns=['Vm_90', 'Vm_50', 'APD90', 'APD50', 'APDtri', 'index_Vm_90', 'Vm_Resting'])
