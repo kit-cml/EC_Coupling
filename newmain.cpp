@@ -170,7 +170,7 @@ int main(int argc, char **argv)
   double max_time_step = 1.0;
   double time_point = 25.0;
   double dt_set;
-  int pace_count;
+  int printer;
 
   //sample loop
   tic();
@@ -207,7 +207,7 @@ int main(int argc, char **argv)
       tcurr = 0.0;
       dt = 0.001;
       tmax = pace_max*bcl;
-      
+      printer=0;
       
       fprintf(fp_vm,"Time,v\n");
       fprintf(fp_conc, "Time,nai,cai\n");
@@ -260,14 +260,20 @@ int main(int argc, char **argv)
           chem_cell->solveAnalytical(dt);
           contr_cell->solveEuler(dt, tcurr, (chem_cell->STATES[cai]*1000.));
         // }
+        
       
         // fprintf(fp_vm, "%lf,%lf,%lf,%lf,%lf\n", tcurr, chem_cell->STATES[v], chem_cell->STATES[cai], contr_cell->ALGEBRAIC[land_T], contr_cell->ALGEBRAIC[land_T]*480*0.5652016963361872);
         // printf("%lf,%lf,%lf\n", tcurr,chem_cell->STATES[cai]*1000,Cai_input[cai_index]);
         if(tcurr >= tmax-bcl){
-        fprintf(fp_vm, "%lf,%lf\n", tcurr, chem_cell->STATES[v]);
-        fprintf(fp_conc,"%lf,%lf,%lf\n", tcurr,chem_cell->STATES[nai], chem_cell->STATES[cai] );
-        fprintf(fp_timestep, "%lf,%lf\n", tcurr,dt);
-        fprintf(fp_icurr,"%lf,%lf,%lf,%lf,%lf,%lf,%lf\n",tcurr,chem_cell->ALGEBRAIC[INa],chem_cell->ALGEBRAIC[IKr], chem_cell->ALGEBRAIC[IKs], chem_cell->ALGEBRAIC[IKs], chem_cell->ALGEBRAIC[IK1], chem_cell->ALGEBRAIC[Ito], chem_cell->ALGEBRAIC[ICaL]);
+        printer++;
+          if(printer == 333){
+              fprintf(fp_vm, "%lf,%lf\n", tcurr, chem_cell->STATES[v]);
+              fprintf(fp_conc,"%lf,%lf,%lf\n", tcurr,chem_cell->STATES[nai], chem_cell->STATES[cai] );
+              fprintf(fp_timestep, "%lf,%lf\n", tcurr,dt);
+              fprintf(fp_icurr,"%lf,%lf,%lf,%lf,%lf,%lf,%lf\n",tcurr,chem_cell->ALGEBRAIC[INa],chem_cell->ALGEBRAIC[IKr], chem_cell->ALGEBRAIC[IKs], chem_cell->ALGEBRAIC[IKs], chem_cell->ALGEBRAIC[IK1], chem_cell->ALGEBRAIC[Ito], chem_cell->ALGEBRAIC[ICaL]);
+              printer=0;
+        }
+        
         }
         tcurr += dt;
       }
