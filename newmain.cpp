@@ -10,6 +10,10 @@
 #include <vector>
 #include <string.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 clock_t START_TIMER;
 
 clock_t tic()
@@ -109,7 +113,6 @@ int main(int argc, char **argv)
   // input variables for cell simulation
   double bcl, dt;
   unsigned int pace_max;
-  unsigned int pace_count;
   
   // qnet/inet values
   double inet, qnet;
@@ -140,9 +143,22 @@ int main(int argc, char **argv)
 
   // printf("Using ORd x Land cell model\n");
   int sample_size;
-  sample_size = get_drug_data_from_file("bepridil.csv",IC50);
+  char drugname[100] = "bepridil";
+  char ic50_address[100] = "./drugs/";
+  char result_address[100]= "./result/";
+
+  strcat(ic50_address,drugname);
+  strcat(ic50_address, ".csv");
+  strcat(result_address,drugname);
+  sample_size = get_drug_data_from_file(ic50_address,IC50);
   double y[7] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0};
   int sample_idx;
+  struct stat st = {0};
+
+  if (stat(result_address, &st) == -1) {
+    mkdir(result_address, 0700);
+  }
+
 
   
   // dt = 1.;
@@ -154,11 +170,16 @@ int main(int argc, char **argv)
   double max_time_step = 1.0;
   double time_point = 25.0;
   double dt_set;
+  int pace_count;
 
   //sample loop
   tic();
   for (sample_idx = 0; sample_idx<sample_size; sample_idx++ ){
-      char filename[100]= "./bepridil/";
+      // char filename[100]= "./bepridil/";
+      strcat(result_address,"/");
+      char filename[100];
+      strcpy(filename,result_address);
+
       sprintf(number, "%d", sample_idx);
       strcat(filename,number);
       strcpy(vmcheck,filename);strcpy(icurr,filename); strcpy(concent, filename); strcpy(timestep,filename);
@@ -239,17 +260,15 @@ int main(int argc, char **argv)
           chem_cell->solveAnalytical(dt);
           contr_cell->solveEuler(dt, tcurr, (chem_cell->STATES[cai]*1000.));
         // }
-        fprintf(fp_vm,"Time,v\n");
-      fprintf(fp_conc, "Time,nai,cai\n");
-      fprintf(fp_timestep, "Time,dt\n");
-      fprintf(fp_icurr, "Time,INa,IKr,IKs,IK1,Ito,ICaL\n");
+      
         // fprintf(fp_vm, "%lf,%lf,%lf,%lf,%lf\n", tcurr, chem_cell->STATES[v], chem_cell->STATES[cai], contr_cell->ALGEBRAIC[land_T], contr_cell->ALGEBRAIC[land_T]*480*0.5652016963361872);
         // printf("%lf,%lf,%lf\n", tcurr,chem_cell->STATES[cai]*1000,Cai_input[cai_index]);
-
+        if(tcurr >= tmax-bcl){
         fprintf(fp_vm, "%lf,%lf\n", tcurr, chem_cell->STATES[v]);
         fprintf(fp_conc,"%lf,%lf,%lf\n", tcurr,chem_cell->STATES[nai], chem_cell->STATES[cai] );
         fprintf(fp_timestep, "%lf,%lf\n", tcurr,dt);
         fprintf(fp_icurr,"%lf,%lf,%lf,%lf,%lf,%lf,%lf\n",tcurr,chem_cell->ALGEBRAIC[INa],chem_cell->ALGEBRAIC[IKr], chem_cell->ALGEBRAIC[IKs], chem_cell->ALGEBRAIC[IKs], chem_cell->ALGEBRAIC[IK1], chem_cell->ALGEBRAIC[Ito], chem_cell->ALGEBRAIC[ICaL]);
+        }
         tcurr += dt;
       }
 
