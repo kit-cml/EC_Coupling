@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 
   // drug initialisation
   drug_t IC50;
-  double conc = 99.0;
+  double conc = 132.0;
 
   // cell object pointer
   Cellmodel* chem_cell; 
@@ -153,11 +153,22 @@ int main(int argc, char **argv)
   sample_size = get_drug_data_from_file(ic50_address,IC50);
   double y[7] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0};
   int sample_idx;
-  struct stat st = {0};
 
+  struct stat st = {0};
   if (stat(result_address, &st) == -1) {
     mkdir(result_address, 0700);
   }
+
+  strcat(result_address,"/");
+  sprintf(number, "%.2f", conc);
+  strcat(result_address,number);
+
+  struct stat st_2 = {0};
+  if (stat(result_address, &st_2) == -1) {
+    mkdir(result_address, 0700);
+  }
+
+  strcat(result_address,"/");
 
 
   
@@ -176,7 +187,7 @@ int main(int argc, char **argv)
   tic();
   for (sample_idx = 0; sample_idx<sample_size; sample_idx++ ){
       // char filename[100]= "./bepridil/";
-      strcat(result_address,"/");
+      
       char filename[100];
       strcpy(filename,result_address);
 
