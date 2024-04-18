@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 
   // drug initialisation
   drug_t IC50;
-  double conc = 132.0;
+  double conc = 38.0*0;
 
   // cell object pointer
   Cellmodel* chem_cell; 
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 
   // printf("Using ORd x Land cell model\n");
   int sample_size;
-  char drugname[100] = "bepridil";
+  char drugname[100] = "chlorpromazine";
   char ic50_address[100] = "./drugs/";
   char result_address[100]= "./result/";
 
@@ -198,7 +198,7 @@ int main(int argc, char **argv)
       contr_cell = new Land_2016();
       chem_cell = new Ohara_Rudy_2011();
       // printf("Initialising\n");
-      chem_cell->initConsts(0., conc, IC50[sample_idx].data, true);
+      chem_cell->initConsts(0., conc, IC50[sample_idx].data, false);
       contr_cell->initConsts(false, false, y);
      
       snprintf(buffer, sizeof(buffer), vmcheck);

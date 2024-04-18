@@ -447,4 +447,4 @@ d_train['risk_level'] = label
 
 d_train1 = d_train.reset_index()
 
-d_train1.to_csv('D:/backup_CML_1/New_Drugs/Chantest_Endo/data_testing_chantest.csv', index=False)
+# d_train1.to_csv('D:/backup_CML_1/New_Drugs/Chantest_Endo/data_testing_chantest.csv', index=False)
