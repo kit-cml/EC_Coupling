@@ -181,7 +181,7 @@ int main(int argc, char **argv)
   double max_time_step = 1.0;
   double time_point = 25.0;
   double dt_set;
-  int printer;
+  int printer,pacer,pace_count;
 
   //sample loop
   tic();
@@ -198,7 +198,7 @@ int main(int argc, char **argv)
       contr_cell = new Land_2016();
       chem_cell = new Ohara_Rudy_2011();
       // printf("Initialising\n");
-      chem_cell->initConsts(0., conc, IC50[sample_idx].data, false);
+      chem_cell->initConsts(0., conc, IC50[sample_idx].data, true);
       contr_cell->initConsts(false, false, y);
      
       snprintf(buffer, sizeof(buffer), vmcheck);
@@ -213,12 +213,14 @@ int main(int argc, char **argv)
       snprintf(buffer, sizeof(buffer), timestep);
       fp_timestep = fopen(buffer, "w");
 
-      pace_max = 100;
-      bcl = 1000.;
+      pace_max = 1000;
+      bcl = 500.;
       tcurr = 0.0;
       dt = 0.001;
-      tmax = pace_max*bcl;
+      tmax = pace_max*bcl; // TODO: Use this to display current pace
       printer=0;
+      pacer=0; 
+      pace_count=0;
       
       fprintf(fp_vm,"Time,v\n");
       fprintf(fp_conc, "Time,nai,cai\n");
@@ -271,8 +273,12 @@ int main(int argc, char **argv)
           chem_cell->solveAnalytical(dt);
           contr_cell->solveEuler(dt, tcurr, (chem_cell->STATES[cai]*1000.));
         // }
-        
-      
+        pacer++;
+        if (pacer==bcl/dt){
+          printf("Pace %d done\n",pace_count+1);
+          pace_count++;
+          pacer=0;
+        }
         // fprintf(fp_vm, "%lf,%lf,%lf,%lf,%lf\n", tcurr, chem_cell->STATES[v], chem_cell->STATES[cai], contr_cell->ALGEBRAIC[land_T], contr_cell->ALGEBRAIC[land_T]*480*0.5652016963361872);
         // printf("%lf,%lf,%lf\n", tcurr,chem_cell->STATES[cai]*1000,Cai_input[cai_index]);
         if(tcurr >= tmax-bcl){
