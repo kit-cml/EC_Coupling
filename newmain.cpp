@@ -105,13 +105,14 @@ int main(int argc, char **argv)
   // drug initialisation
   drug_t IC50;
   double conc = 38.0*0;
+  double bcl = 500.;
 
   // cell object pointer
   Cellmodel* chem_cell; 
   Cellmodel* contr_cell;
 
   // input variables for cell simulation
-  double bcl, dt;
+  double dt;
   unsigned int pace_max;
   
   // qnet/inet values
@@ -198,7 +199,7 @@ int main(int argc, char **argv)
       contr_cell = new Land_2016();
       chem_cell = new Ohara_Rudy_2011();
       // printf("Initialising\n");
-      chem_cell->initConsts(0., conc, IC50[sample_idx].data, true);
+      chem_cell->initConsts(0., bcl, conc, IC50[sample_idx].data, true);
       contr_cell->initConsts(false, false, y);
      
       snprintf(buffer, sizeof(buffer), vmcheck);
@@ -214,7 +215,7 @@ int main(int argc, char **argv)
       fp_timestep = fopen(buffer, "w");
 
       pace_max = 1000;
-      bcl = 500.;
+     
       tcurr = 0.0;
       dt = 0.001;
       tmax = pace_max*bcl; // TODO: Use this to display current pace
@@ -226,7 +227,7 @@ int main(int argc, char **argv)
       fprintf(fp_conc, "Time,nai,cai\n");
       fprintf(fp_timestep, "Time,dt\n");
       fprintf(fp_icurr, "Time,INa,IKr,IKs,IK1,Ito,ICaL\n");
-      while (tcurr<tmax)
+      while (tcurr<tmax) //pacing loop
       {
         // cai_index = tcurr;
           // compute ODE at tcurr

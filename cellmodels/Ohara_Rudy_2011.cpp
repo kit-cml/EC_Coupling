@@ -455,7 +455,7 @@ void Ohara_Rudy_2011::computeRates()
 
 }
 
-void Ohara_Rudy_2011::___initConsts(double type)
+void Ohara_Rudy_2011::___initConsts(double type, double bcl)
 {
 CONSTANTS[celltype] = type;
 CONSTANTS[nao] = 140;
@@ -470,7 +470,7 @@ CONSTANTS[zk] = 1;
 CONSTANTS[L] = 0.01;
 CONSTANTS[rad] = 0.0011;
 CONSTANTS[stim_start] = 10.0;
-CONSTANTS[BCL] = 1000.0;
+CONSTANTS[BCL] = bcl;
 STATES[v] = -87;
 CONSTANTS[amp] = -80;
 CONSTANTS[duration] = 0.5;
@@ -1018,17 +1018,17 @@ CONSTANTS[PCa] = CONSTANTS[PCa] * ( (ic50[0] > 10E-14 && ic50[1] > 10E-14) ? 1./
 
 void Ohara_Rudy_2011::initConsts()
 {
-	___initConsts(0.);
+	___initConsts(0.,1000.);
 }
 
 void Ohara_Rudy_2011::initConsts(double type)
 {
-	___initConsts(type);
+	___initConsts(type,1000.);
 }
 
-void Ohara_Rudy_2011::initConsts(double type, double conc, double *ic50, bool is_dutta)
+void Ohara_Rudy_2011::initConsts(double type, double bcl, double conc, double *ic50, bool is_dutta)
 {
-	___initConsts(type);
+	___initConsts(type, bcl);
 	___applyDutta();
 }
 

@@ -12,7 +12,7 @@ public:
   void initConsts ();
   void initConsts(double type);
 	void initConsts(bool is_dutta);
-	void initConsts(double type, double conc, double *ic50, bool is_dutta );
+	void initConsts(double type, double bcl, double conc, double *ic50, bool is_dutta );
   void computeRates();
   void computeRates(double TIME, double *CONSTANTS, double *RATES, double *STATES, double *ALGEBRAIC, double land_trpn);
   // void solveAnalytical();
@@ -24,7 +24,7 @@ public:
 private:
 	void ___applyDrugEffect(double conc, double *ic50);
 	void ___applyDutta();
-	void ___initConsts(double type);
+	void ___initConsts(double type, double bcl);
 
 };
 

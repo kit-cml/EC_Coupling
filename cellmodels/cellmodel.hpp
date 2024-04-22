@@ -24,10 +24,12 @@ public:
   char concs_header[255];
   unsigned short concs_indices[255];
   virtual ~Cellmodel() {}
+
   virtual void initConsts() = 0;
   virtual void initConsts(double type){}
   virtual void initConsts(double type, double conc, double *hill){}
   virtual void initConsts(double type, double conc, double *hill, bool is_dutta){}
+  virtual void initConsts(double type, double bcl, double conc, double *hill, bool is_dutta){}
   virtual void initConsts(double type, double conc, double *hill, double* boot){}
   virtual void initConsts( bool is_skinned, bool BETA, double* y){}
   
