@@ -105,7 +105,7 @@ int main(int argc, char **argv)
   // drug initialisation
   drug_t IC50;
   double conc = 38.0*0;
-  double bcl = 500.;
+  double bcl = 2000.;
 
   // cell object pointer
   Cellmodel* chem_cell; 
