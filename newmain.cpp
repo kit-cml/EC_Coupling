@@ -105,7 +105,7 @@ int main(int argc, char **argv)
   // drug initialisation
   drug_t IC50;
   double conc = 38.0*0;
-  double bcl = 2000.;
+  double bcl = 1000.;
 
   // cell object pointer
   Cellmodel* chem_cell; 
@@ -272,7 +272,7 @@ int main(int argc, char **argv)
         // }
         // else{
           chem_cell->solveAnalytical(dt);
-          contr_cell->solveEuler(dt, tcurr, (chem_cell->STATES[cai]*1000.));
+          contr_cell->solveEuler(dt, tcurr, (chem_cell->STATES[cai]));
         // }
         pacer++;
         if (pacer==bcl/dt){
