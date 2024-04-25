@@ -104,8 +104,9 @@ int main(int argc, char **argv)
 
   // drug initialisation
   drug_t IC50;
+  bool is_cai_scaling = false;
   double conc = 38.0*0;
-  double bcl = 1000.;
+  double bcl = 2000.;
 
   // cell object pointer
   Cellmodel* chem_cell; 
@@ -214,7 +215,7 @@ int main(int argc, char **argv)
       snprintf(buffer, sizeof(buffer), timestep);
       fp_timestep = fopen(buffer, "w");
 
-      pace_max = 1000;
+      pace_max = 1500;
      
       tcurr = 0.0;
       dt = 0.001;
@@ -272,7 +273,12 @@ int main(int argc, char **argv)
         // }
         // else{
           chem_cell->solveAnalytical(dt);
-          contr_cell->solveEuler(dt, tcurr, (chem_cell->STATES[cai]));
+          if (is_cai_scaling == true){
+            contr_cell->solveEuler(dt, tcurr, (chem_cell->STATES[cai]*1000.));
+          }
+          else{
+            contr_cell->solveEuler(dt, tcurr, (chem_cell->STATES[cai]));
+          }
         // }
         pacer++;
         if (pacer==bcl/dt){
