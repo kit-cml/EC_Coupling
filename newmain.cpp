@@ -122,7 +122,7 @@ int main(int argc, char **argv)
   // variables for I/O
   char buffer[255];
   char number[10];
-  char vmcheck[100], icurr[100], concent[100], timestep[100];
+  char vmcheck[100], icurr[100], concent[100], timestep[100], tension[100];
   
   FILE* fp_vm;
   FILE* fp_icurr;
@@ -131,6 +131,7 @@ int main(int argc, char **argv)
   // FILE* fp_inet;
   // FILE* fp_qnet;
   FILE* fp_timestep;
+  FILE* fp_tension;
   // FILE* fp_ikr_gates;
  
   // int idx=0;
@@ -145,7 +146,7 @@ int main(int argc, char **argv)
 
   // printf("Using ORd x Land cell model\n");
   int sample_size;
-  char drugname[100] = "chlorpromazine";
+  char drugname[100] = "testing";
   char ic50_address[100] = "./drugs/";
   char result_address[100]= "./result/";
 
@@ -195,8 +196,8 @@ int main(int argc, char **argv)
 
       sprintf(number, "%d", sample_idx);
       strcat(filename,number);
-      strcpy(vmcheck,filename);strcpy(icurr,filename); strcpy(concent, filename); strcpy(timestep,filename);
-      strcat(vmcheck, "vmcheck.csv");strcat(icurr, "icurr.csv");strcat(concent, "conc.csv");strcat(timestep, "timestep.csv");
+      strcpy(vmcheck,filename);strcpy(icurr,filename); strcpy(concent, filename); strcpy(timestep,filename); strcpy(tension,filename);
+      strcat(vmcheck, "vmcheck.csv");strcat(icurr, "icurr.csv");strcat(concent, "conc.csv");strcat(timestep, "timestep.csv");strcat(tension, "timestep.csv");
       contr_cell = new Land_2016();
       chem_cell = new Ohara_Rudy_2011();
       // printf("Initialising\n");
@@ -215,6 +216,9 @@ int main(int argc, char **argv)
       snprintf(buffer, sizeof(buffer), timestep);
       fp_timestep = fopen(buffer, "w");
 
+      snprintf(buffer, sizeof(buffer), tension);
+      fp_tension = fopen(buffer, "w");
+
       pace_max = 1000;
      
       tcurr = 0.0;
@@ -228,6 +232,7 @@ int main(int argc, char **argv)
       fprintf(fp_conc, "Time,nai,cai\n");
       fprintf(fp_timestep, "Time,dt\n");
       fprintf(fp_icurr, "Time,INa,IKr,IKs,IK1,Ito,ICaL\n");
+      fprintf(fp_tension, "Time,Tension\n");
       while (tcurr<tmax) //pacing loop
       {
         // cai_index = tcurr;
@@ -294,6 +299,7 @@ int main(int argc, char **argv)
               fprintf(fp_vm, "%lf,%lf\n", tcurr, chem_cell->STATES[v]);
               fprintf(fp_conc,"%lf,%lf,%lf\n", tcurr,chem_cell->STATES[nai], chem_cell->STATES[cai] );
               fprintf(fp_timestep, "%lf,%lf\n", tcurr,dt);
+              fprintf(fp_tension, "%lf,%lf\n", tcurr,contr_cell->ALGEBRAIC[land_T]);
               fprintf(fp_icurr,"%lf,%lf,%lf,%lf,%lf,%lf,%lf\n",tcurr,chem_cell->ALGEBRAIC[INa],chem_cell->ALGEBRAIC[IKr], chem_cell->ALGEBRAIC[IKs], chem_cell->ALGEBRAIC[IKs], chem_cell->ALGEBRAIC[IK1], chem_cell->ALGEBRAIC[Ito], chem_cell->ALGEBRAIC[ICaL]);
               printer=0;
         }
@@ -306,6 +312,7 @@ int main(int argc, char **argv)
   fclose(fp_icurr);
   fclose(fp_conc);
   fclose(fp_timestep);
+  fclose(fp_tension);
 } //sample loop
 
 toc();

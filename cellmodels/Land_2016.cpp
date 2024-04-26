@@ -60,7 +60,8 @@ if (CONSTANTS[lambda] >= 1.2){
     CONSTANTS[wfrac] = 0.5;
 
     CONSTANTS[TOT_A] = 25;
-    CONSTANTS[ktm_unblock] = 1;
+    // CONSTANTS[ktm_unblock] = 1; // before margara
+    CONSTANTS[ktm_unblock] = 0.04; // after margara
 
     CONSTANTS[beta_1] = -2.4;
     CONSTANTS[beta_0] = 2.3;
@@ -77,7 +78,8 @@ if (CONSTANTS[lambda] >= 1.2){
     }
     else
     {
-    CONSTANTS[nperm] = 5.0;
+    CONSTANTS[nperm] = 5.0; // before margara
+    CONSTANTS[nperm] = 2.4; // after margara
     ALGEBRAIC[ca50] = 0.805;
     CONSTANTS[Tref] = 120.0;
     CONSTANTS[nu] = 7;
