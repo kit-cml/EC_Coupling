@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 
   // drug initialisation
   drug_t IC50;
-  bool is_cai_scaling = false;
+  bool is_cai_scaling = true;
   double conc = 38.0*0;
   double bcl = 2000.;
 
@@ -215,7 +215,7 @@ int main(int argc, char **argv)
       snprintf(buffer, sizeof(buffer), timestep);
       fp_timestep = fopen(buffer, "w");
 
-      pace_max = 1500;
+      pace_max = 1000;
      
       tcurr = 0.0;
       dt = 0.001;
