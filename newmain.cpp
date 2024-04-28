@@ -197,7 +197,7 @@ int main(int argc, char **argv)
       sprintf(number, "%d", sample_idx);
       strcat(filename,number);
       strcpy(vmcheck,filename);strcpy(icurr,filename); strcpy(concent, filename); strcpy(timestep,filename); strcpy(tension,filename);
-      strcat(vmcheck, "vmcheck.csv");strcat(icurr, "icurr.csv");strcat(concent, "conc.csv");strcat(timestep, "timestep.csv");strcat(tension, "timestep.csv");
+      strcat(vmcheck, "vmcheck.csv");strcat(icurr, "icurr.csv");strcat(concent, "conc.csv");strcat(timestep, "timestep.csv");strcat(tension, "tension.csv");
       contr_cell = new Land_2016();
       chem_cell = new Ohara_Rudy_2011();
       // printf("Initialising\n");
