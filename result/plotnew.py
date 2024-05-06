@@ -6,12 +6,7 @@ import matplotlib.pyplot as plt
 
 data_main = pd.read_csv("orudy_cai.csv")
 
-# coupled = pd.read_csv("../result/chlorpromazine/0.00/0conc.csv")
-# data1 = pd.read_csv("./1000_noscale/0.00/0conc.csv")
-# data2 = pd.read_csv("./1000/0.00/0vmcheck.csv")
-data2 = pd.read_csv("./1000_bclfix/0.00/0conc.csv")
-# data3 = pd.read_csv("./1500_bclfix/0.00/0conc.csv")
-# data4 = pd.read_csv("./2000_bclfix/0.00/0conc.csv")
+data2 = pd.read_csv("./testing/0.00/0conc.csv")
 
 # Create a figure and subplots with shared x- axis            
 plt.figure()
@@ -28,7 +23,7 @@ time2 = data2['Time']-999000
 # plt.scatter(time3, data3['cai'].head(len(time3)), color='orange', label='1500 BCL')
 plt.scatter(time2, data2['cai'].head(len(time2))*1000000, color='blue', label='Coupled')
 # plt.scatter(time1, data1['cai'].head(len(time1)), color='lightblue', label='Not Scaled')
-plt.scatter(data_main['Time'], data_main['Cai_1000msec'], color='red', label='Non-Coupled')
+plt.scatter(data_main['Time'], data_main['Cai(x1.000.000)(milliM->picoM)'], color='red', label='Non-Coupled')
 
 # plt.scatter(data4['Time']-1998000, data4['v'], color='red', label='2000 BCL')
 # plt.scatter(data3['Time']-1498500, data3['v'], color='orange', label='1500 BCL')
