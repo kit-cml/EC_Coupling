@@ -1,4 +1,4 @@
 *.plt
 *.dat
-
-bin/orudy_cell_sim
+result/*/*/*.csv
+bin/*/*/orudy_cell_sim
