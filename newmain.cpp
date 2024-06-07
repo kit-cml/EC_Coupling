@@ -105,7 +105,7 @@ int main(int argc, char **argv)
   // drug initialisation
   drug_t IC50;
   bool is_cai_scaling = true;
-  double conc = 38.0*0;
+  double conc = 38.0;
   double bcl = 1000.;
 
   // cell object pointer
