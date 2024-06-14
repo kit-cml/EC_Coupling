@@ -1030,6 +1030,7 @@ void Ohara_Rudy_2011::initConsts(double type, double bcl, double conc, double *i
 {
 	___initConsts(type, bcl);
 	___applyDutta();
+  ___applyDrugEffect(conc, ic50);
 }
 
 // void Ohara_Rudy_2011::solveAnalytical(double dt, double Ca_TRPN)
