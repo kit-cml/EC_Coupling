@@ -184,7 +184,8 @@ int main(int argc, char **argv)
   double max_time_step = 1.0;
   double time_point = 25.0;
   double dt_set;
-  int printer,pacer,pace_count;
+  int printer,pacer,pace_count,tracing_pace;
+  tracing_pace = 1;
 
   //sample loop
   tic();
@@ -293,7 +294,7 @@ int main(int argc, char **argv)
         }
         // fprintf(fp_vm, "%lf,%lf,%lf,%lf,%lf\n", tcurr, chem_cell->STATES[v], chem_cell->STATES[cai], contr_cell->ALGEBRAIC[land_T], contr_cell->ALGEBRAIC[land_T]*480*0.5652016963361872);
         // printf("%lf,%lf,%lf\n", tcurr,chem_cell->STATES[cai]*1000,Cai_input[cai_index]);
-        if(tcurr >= tmax-bcl){
+        if(tcurr >= tmax-(bcl*tracing_pace)){
         printer++;
           if(printer == 333){
               fprintf(fp_vm, "%lf,%lf\n", tcurr, chem_cell->STATES[v]);
