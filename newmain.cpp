@@ -238,6 +238,15 @@ int main(int argc, char **argv)
       {
         // cai_index = tcurr;
           // compute ODE at tcurr
+
+        //compute mechanical for rates trpn
+        contr_cell->computeRates(tcurr,
+                    contr_cell->CONSTANTS,
+                    contr_cell->RATES,
+                    contr_cell->STATES,
+                    contr_cell->ALGEBRAIC,
+                    y);
+        // compute electrical for states cai
         chem_cell->computeRates(tcurr,
                     chem_cell->CONSTANTS,
                     chem_cell->RATES,
@@ -246,45 +255,16 @@ int main(int argc, char **argv)
                     contr_cell->RATES[TRPN]
                     );
 
-        contr_cell->computeRates(tcurr,
-                    contr_cell->CONSTANTS,
-                    contr_cell->RATES,
-                    contr_cell->STATES,
-                    contr_cell->ALGEBRAIC,
-                    y);
-
-        // dt_set = Ohara_Rudy_2011::set_time_step(tcurr,
-        //            time_point,
-        //            max_time_step,
-        //            chem_cell->CONSTANTS,
-        //            chem_cell->RATES,
-        //            chem_cell->STATES,
-        //            chem_cell->ALGEBRAIC);
-        // // dt_set = dt;
-
-        // // compute accepted timestep
-        // if (floor((tcurr + dt_set) / bcl) == floor(tcurr / bcl)) {
-        //   dt = dt_set;
-        // }
-        // else {
-        //   dt = (floor(tcurr / bcl) + 1) * bcl - tcurr;
-        //   inet = 0.;
-        //   if(floor(tcurr)==floor(bcl*pace_max)) //printf("Qnet final value: %lf\n", qnet/1000.0);
-        //   qnet = 0.;
-        // }
-
-        // if(tcurr==0.0){
-          // chem_cell->solveAnalytical(dt);
-          // contr_cell->solveEuler(dt, tcurr,Cai_input[cai_index]);
-        // }
-        // else{
-          chem_cell->solveAnalytical(dt);
+          //solve mechanical
           if (is_cai_scaling == true){
             contr_cell->solveEuler(dt, tcurr, (chem_cell->STATES[cai]*1000.));
           }
           else{
             contr_cell->solveEuler(dt, tcurr, (chem_cell->STATES[cai]));
           }
+
+          // solve electrical cell
+          chem_cell->solveAnalytical(dt);
         // }
         pacer++;
         if (pacer==bcl/dt){
